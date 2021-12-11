@@ -1,0 +1,28 @@
+[package]
+name = "tfchain_client"
+version = "0.1.0"
+authors = ["dylanVerstraete <dylan_verstraete1@hotmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+substrate-api-client = { git = "https://github.com/scs/substrate-api-client", rev = "a08d8ae8017535051975f5a7ff20bd93d35e4eb3" }
+codec = { package = "parity-scale-codec", features = ["derive"], version = "2.0.0", default-features = false }
+
+[dependencies.sp-core]
+version = "3.0.0"
+
+[dependencies.keyring]
+package = "sp-keyring"
+version = "3.0.0"
+
+[patch.'https://github.com/paritytech/substrate']
+metadata = { package = "frame-metadata", version = "13.0.0", default-features = false }
+sp-version = { version = "3.0.0", default-features = false }
+balances = { package = "pallet-balances", version = "3.0.0", default-features = false }
+sc-rpc-api = "0.9.0"
+sp-core = "3.0.0"
+sp-runtime = "3.0.0"
+system = { package = "frame-system", version = "3.0.0" }
+support = { package = "frame-support", version = "3.0.0" }
