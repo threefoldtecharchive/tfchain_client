@@ -5,10 +5,21 @@ authors = ["dylanVerstraete <dylan_verstraete1@hotmail.com>"]
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+path = "src/lib.rs"
+name = "tfchain_client"
+
+[[bin]]
+path = "src/main.rs"
+name = "tfchain_cli"
 
 [dependencies]
 substrate-api-client = { git = "https://github.com/scs/substrate-api-client", rev = "a08d8ae8017535051975f5a7ff20bd93d35e4eb3" }
 codec = { package = "parity-scale-codec", features = ["derive"], version = "2.0.0", default-features = false }
+hex = { version = "0.4", default-features = false }
+tokio = { version = "1.14.0", features = ["full"] }
+clap = "3.0.5"
+git-version = "0.3.5"
 
 [dependencies.sp-core]
 version = "3.0.0"
