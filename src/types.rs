@@ -90,8 +90,8 @@ impl Display for Node {
             f,
             "\tMRU: {} ({:.02} GB | {:.02} GiB)",
             self.resources.mru,
-            self.resources.mru / 1_000_000_000,
-            self.resources.mru / (1 << 30)
+            self.resources.mru as f64 / 1_000_000_000f64,
+            self.resources.mru as f64 / (1 << 30) as f64
         )?;
         writeln!(
             f,
