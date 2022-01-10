@@ -1,5 +1,7 @@
 use codec::{Decode, Encode};
 
+pub use substrate_api_client::AccountInfo;
+
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug)]
 pub struct Twin<AccountId> {
     pub version: u32,
