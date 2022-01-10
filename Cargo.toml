@@ -23,8 +23,18 @@ git-version = "0.3.5"
 tfchain_tfgrid = { git = "https://github.com/threefoldtech/tfchain", package = "pallet-tfgrid", branch = "development" }
 chrono = "0.4"
 
+[dependencies.runtime]
+git = "https://github.com/threefoldtech/tfchain"
+package = "tfchain-runtime"
+branch = "development"
+#path = "../tfchain/substrate-node/runtime"
+
 [dependencies.sp-core]
 version = "3.0.0"
+
+[dependencies.system]
+version = "3.0.0"
+package = "frame-system"
 
 [dependencies.keyring]
 package = "sp-keyring"

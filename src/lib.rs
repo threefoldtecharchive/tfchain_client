@@ -1,3 +1,4 @@
+use runtime::Block;
 pub use sp_core::crypto::AccountId32;
 use sp_core::crypto::Pair;
 pub use sp_core::H256 as Hash;
@@ -9,7 +10,7 @@ use substrate_api_client::{
 type ApiResult<T> = Result<T, ApiClientError>;
 
 mod types;
-use types::{AccountInfo, AccountData, Farm, Node, Twin, Contract};
+use types::{AccountData, AccountInfo, Contract, Farm, Node, Twin};
 
 pub struct Client<P>
 where
@@ -102,5 +103,28 @@ where
             .unwrap();
 
         Ok(contract)
+    }
+
+    pub fn get_block_by_hash(&self, block_hash: &str) -> ApiResult<Option<Block>> {
+        // TODO: Very happy path
+        let mut raw_hash = [0; 32];
+        hex::decode_to_slice(&block_hash[2..], &mut raw_hash).unwrap();
+        let hash = Hash::from(raw_hash);
+        Ok(self.api.get_block(Some(hash))?)
+    }
+
+    pub fn get_block_events(
+        &self,
+        block_hash: &str,
+    ) -> ApiResult<Vec<system::EventRecord<runtime::Event, Hash>>> {
+        let mut raw_hash = [0; 32];
+        hex::decode_to_slice(&block_hash[2..], &mut raw_hash).unwrap();
+        let hash = Hash::from(raw_hash);
+        let events: Vec<system::EventRecord<runtime::Event, Hash>> = self
+            .api
+            .get_storage_value("System", "Events", Some(hash))?
+            .unwrap();
+
+        Ok(events)
     }
 }
