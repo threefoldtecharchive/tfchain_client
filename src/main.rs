@@ -39,6 +39,16 @@ async fn main() {
                         .required(true),
                 ),
         )
+        .subcommand(
+            App::new("node")
+                .about("Get a node registered on chain")
+                .arg(
+                    Arg::new("node_id")
+                        .help("the id of the node to fetch")
+                        .takes_value(true)
+                        .required(true),
+                ),
+        )
         .get_matches();
 
     let websocket = matches.value_of("websocket").unwrap();
@@ -73,6 +83,17 @@ async fn main() {
                 Err(e) => {
                     println!("{} is not a valid account ({})", account, e);
                 }
+            }
+        }
+        Some(("node", node_data)) => {
+            let from = AccountKeyring::Alice.pair();
+            let client = tfchain_client::Client::new(String::from(websocket), from);
+            match node_data.value_of_t("node_id") {
+                Ok(node_id) => {
+                    let node = client.get_node_by_id(node_id).unwrap();
+                    println!("{}", node);
+                }
+                Err(e) => println!("could not parse node_id: {}", e),
             }
         }
         _ => unreachable!(), // If all subcommands are defined above, anything else is unreachable

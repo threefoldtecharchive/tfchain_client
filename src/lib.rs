@@ -9,7 +9,7 @@ use substrate_api_client::{
 type ApiResult<T> = Result<T, ApiClientError>;
 
 mod types;
-use types::{AccountInfo, Farm, Twin};
+use types::{AccountInfo, Farm, Node, Twin};
 
 pub struct Client<P>
 where
@@ -72,8 +72,7 @@ where
     pub fn get_account_free_balance(&self, account: &AccountId32) -> ApiResult<String> {
         let info: AccountInfo = self
             .api
-            .get_storage_map("System", "Account", account, None)
-            .unwrap()
+            .get_storage_map("System", "Account", account, None)?
             .or_else(|| Some(AccountInfo::default()))
             .unwrap();
 
@@ -82,5 +81,15 @@ where
             info.data.free / 1e7 as u128,
             info.data.free % 1e7 as u128
         ))
+    }
+
+    pub fn get_node_by_id(&self, node_id: u32) -> ApiResult<Node> {
+        let node = self
+            .api
+            .get_storage_map("TfgridModule", "Nodes", node_id, None)?
+            .or_else(|| Some(Node::default()))
+            .unwrap();
+
+        Ok(node)
     }
 }
