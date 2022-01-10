@@ -92,6 +92,18 @@ async fn main() {
                     ),
                 ),
         )
+        .subcommand(
+            App::new("block")
+                .about("Get a block from the chain")
+                .subcommand(
+                    App::new("get").about("Get block by hash").arg(
+                        Arg::new("block_hash")
+                            .help("The hash of the block to get from the chain")
+                            .takes_value(true)
+                            .required(true),
+                    ),
+                ),
+        )
         .get_matches();
 
     let websocket = matches.value_of("websocket").unwrap();
@@ -177,6 +189,21 @@ async fn main() {
                         println!("transaction included in blockhash: {:?}", hash);
                     }
                     Err(e) => println!("could not parse ip: {}", e),
+                }
+            }
+        }
+        Some(("block", block_data)) => {
+            if let Some(get_block) = block_data.subcommand_matches("get") {
+                match get_block.value_of("block_hash") {
+                    Some(block_hash) => {
+                        let block = client.get_block_by_hash(block_hash).unwrap().unwrap();
+                        println!("Block:\n{:#?}", block);
+                        println!(
+                            "Events:\n{:#?}",
+                            client.get_block_events(block_hash).unwrap()
+                        );
+                    }
+                    None => println!("Missing block hash"),
                 }
             }
         }
