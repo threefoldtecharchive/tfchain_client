@@ -1,9 +1,9 @@
 use chrono::prelude::*;
 use codec::{Decode, Encode};
 use std::fmt::{self, Display};
+pub use sp_core::crypto::AccountId32;
 pub use substrate_api_client::AccountInfo;
 pub use tfchain_tfgrid::types::{CertificationType, Resources};
-pub use tfchain_smart_contract::types::{ContractState};
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug)]
 pub struct Twin<AccountId> {
@@ -116,6 +116,77 @@ pub enum ContractData {
 impl Default for ContractData {
     fn default() -> ContractData {
         ContractData::NodeContract(NodeContract::default())
+    }
+}
+
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Debug)]
+pub enum ContractState {
+    Created,
+    Deleted(Cause),
+}
+
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Debug)]
+pub enum Cause {
+    CanceledByUser,
+    OutOfFunds
+}
+
+impl Default for ContractState {
+    fn default() -> ContractState {
+        ContractState::Created
+    }
+}
+
+impl Display for Twin<AccountId32> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "Twin details for twin {}", self.id)?;
+        writeln!(f, "Account ID {}", self.account_id)?;
+        writeln!(f, "IP: {}", self.ip)
+    }
+}
+
+impl Display for ContractData {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            ContractData::NameContract(name_contract) => {
+                writeln!(f, "Name: {}", name_contract.name)
+            },
+            ContractData::NodeContract(node_contract) => {
+                writeln!(f, "Node id: {}", node_contract.node_id)?;
+                writeln!(f, "Deployment data: {}", node_contract.deployment_data)?;
+                writeln!(f, "Deployment hash: {}", node_contract.deployment_hash)?;
+                for ip in &node_contract.public_ips_list {
+                    writeln!(f, "IP: {}", ip.ip)?;
+                    writeln!(f, "Gateway: {}", ip.gateway)?;
+                }
+                write!(f, "Number of public ips: {}", node_contract.public_ips)
+            }
+        }
+    }
+}
+
+impl Display for Contract {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "Contract details for contract {}", self.contract_id)?;
+        writeln!(f, "State: {}", self.state)?;
+        writeln!(f, "Twin id: {}", self.twin_id)?;
+        writeln!(f, "{}", self.contract_type)
+    }
+}
+
+impl Display for ContractState {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            ContractState::Created => {
+                write!(f, "Created")
+            },
+            ContractState::Deleted(Cause::CanceledByUser) => {
+                write!(f, "Canceled by user")
+            },
+            ContractState::Deleted(Cause::OutOfFunds) => {
+                write!(f, "Out of funds")
+            },
+        }
     }
 }
 

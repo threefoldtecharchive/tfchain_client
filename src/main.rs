@@ -59,6 +59,16 @@ async fn main() {
                         .required(true),
                 ),
         )
+        .subcommand(
+            App::new("twin")
+                .about("Get a twin registered on chain")
+                .arg(
+                    Arg::new("twin_id")
+                        .help("the id of the twin to fetch")
+                        .takes_value(true)
+                        .required(true),
+                ),
+        )
         .get_matches();
 
     let websocket = matches.value_of("websocket").unwrap();
@@ -111,9 +121,20 @@ async fn main() {
             match contract_data.value_of_t("contract_id") {
                 Ok(contract_id) => {
                     let contract = client.get_contract_by_id(contract_id).unwrap();
-                    println!("{:?}", contract);
+                    println!("{}", contract);
                 }
                 Err(e) => println!("could not parse contract_id: {}", e),
+            }
+        }
+        Some(("twin", twin_data)) => {
+            let from = AccountKeyring::Alice.pair();
+            let client = tfchain_client::Client::new(String::from(websocket), from);
+            match twin_data.value_of_t("twin_id") {
+                Ok(twin_id) => {
+                    let twin = client.get_twin_by_id(twin_id).unwrap();
+                    println!("{}", twin);
+                }
+                Err(e) => println!("could not parse twin_id: {}", e),
             }
         }
         _ => unreachable!(), // If all subcommands are defined above, anything else is unreachable

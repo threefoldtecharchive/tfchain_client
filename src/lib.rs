@@ -32,7 +32,6 @@ where
     pub fn create_twin(&self, ip: String) -> ApiResult<Option<Hash>> {
         let xt: UncheckedExtrinsicV4<_> =
             compose_extrinsic!(self.api.clone(), "TfgridModule", "create_twin", ip);
-        println!("[+] Composed Extrinsic:\n {:?}\n", xt);
         self.api.send_extrinsic(xt.hex_encode(), XtStatus::InBlock)
     }
 
@@ -45,6 +44,12 @@ where
             .unwrap();
 
         Ok(twin)
+    }
+
+    pub fn create_farm(&self, name: String) -> ApiResult<Option<Hash>> {
+        let xt: UncheckedExtrinsicV4<_> =
+            compose_extrinsic!(self.api.clone(), "TfgridModule", "create_farm", name);
+        self.api.send_extrinsic(xt.hex_encode(), XtStatus::InBlock)
     }
 
     pub fn get_farm_by_id(&self, id: u32) -> ApiResult<Farm> {
