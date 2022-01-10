@@ -9,7 +9,7 @@ use substrate_api_client::{
 type ApiResult<T> = Result<T, ApiClientError>;
 
 mod types;
-use types::{AccountInfo, Farm, Node, Twin};
+use types::{AccountInfo, Farm, Node, Twin, Contract};
 
 pub struct Client<P>
 where
@@ -91,5 +91,15 @@ where
             .unwrap();
 
         Ok(node)
+    }
+
+    pub fn get_contract_by_id(&self, contract_id: u64) -> ApiResult<Contract> {
+        let contract = self
+            .api
+            .get_storage_map("SmartContractModule", "Contracts", contract_id, None)?
+            .or_else(|| Some(Contract::default()))
+            .unwrap();
+
+        Ok(contract)
     }
 }

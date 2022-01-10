@@ -49,6 +49,16 @@ async fn main() {
                         .required(true),
                 ),
         )
+        .subcommand(
+            App::new("contract")
+                .about("Get a contract registered on chain")
+                .arg(
+                    Arg::new("contract_id")
+                        .help("the id of the contract to fetch")
+                        .takes_value(true)
+                        .required(true),
+                ),
+        )
         .get_matches();
 
     let websocket = matches.value_of("websocket").unwrap();
@@ -64,9 +74,8 @@ async fn main() {
                         let farm = client.get_farm_by_id(x).unwrap();
                         println!("farm: {:?}", farm);
                     }
-                    Err(_) => {
-                        println!("not a number");
-                        // Err(e)
+                    Err(e) => {
+                        println!("could not find farm: {}", e);
                     }
                 }
             }
@@ -96,11 +105,17 @@ async fn main() {
                 Err(e) => println!("could not parse node_id: {}", e),
             }
         }
+        Some(("contract", contract_data)) => {
+            let from = AccountKeyring::Alice.pair();
+            let client = tfchain_client::Client::new(String::from(websocket), from);
+            match contract_data.value_of_t("contract_id") {
+                Ok(contract_id) => {
+                    let contract = client.get_contract_by_id(contract_id).unwrap();
+                    println!("{:?}", contract);
+                }
+                Err(e) => println!("could not parse contract_id: {}", e),
+            }
+        }
         _ => unreachable!(), // If all subcommands are defined above, anything else is unreachable
     };
-
-    // if let Err(e) = result {
-    //     println!("error: {:?}", e);
-    //     std::process::exit(1)
-    // }
 }

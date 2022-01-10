@@ -2,7 +2,8 @@ use chrono::prelude::*;
 use codec::{Decode, Encode};
 use std::fmt::{self, Display};
 pub use substrate_api_client::AccountInfo;
-pub use tfchain::types::{CertificationType, Resources};
+pub use tfchain_tfgrid::types::{CertificationType, Resources};
+pub use tfchain_smart_contract::types::{ContractState};
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug)]
 pub struct Twin<AccountId> {
@@ -77,6 +78,45 @@ pub struct PublicConfig {
     pub gw4: String,
     pub gw6: String,
     pub domain: String,
+}
+
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug)]
+pub struct Contract {
+    pub version: u32,
+    pub state: ContractState,
+    pub contract_id: u64,
+    pub twin_id: u32,
+    pub contract_type: ContractData,
+}
+
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug)]
+pub struct NodeContract {
+    pub node_id: u32,
+    // deployment_data is the encrypted deployment body. This encrypted the deployment with the **USER** public key.
+    // So only the user can read this data later on (or any other key that he keeps safe).
+    // this data part is read only by the user and can actually hold any information to help him reconstruct his deployment or can be left empty.
+    pub deployment_data: String,
+    // Hash of the deployment, set by the user
+    pub deployment_hash: String,
+    pub public_ips: u32,
+    pub public_ips_list: Vec<PublicIP>,
+}
+
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug)]
+pub struct NameContract {
+    pub name: String,
+}
+
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Debug)]
+pub enum ContractData {
+    NodeContract(NodeContract),
+    NameContract(NameContract),
+}
+
+impl Default for ContractData {
+    fn default() -> ContractData {
+        ContractData::NodeContract(NodeContract::default())
+    }
 }
 
 impl Display for Node {

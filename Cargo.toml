@@ -20,7 +20,8 @@ hex = { version = "0.4", default-features = false }
 tokio = { version = "1.14.0", features = ["full"] }
 clap = "3.0.5"
 git-version = "0.3.5"
-tfchain = { git = "https://github.com/threefoldtech/tfchain", package = "pallet-tfgrid", branch = "development" }
+tfchain_tfgrid = { git = "https://github.com/threefoldtech/tfchain", package = "pallet-tfgrid", branch = "development" }
+tfchain_smart_contract = { git = "https://github.com/threefoldtech/tfchain", package = "pallet-smart-contract", branch = "development" }
 chrono = "0.4"
 
 [dependencies.sp-core]
