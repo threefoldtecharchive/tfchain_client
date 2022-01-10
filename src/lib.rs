@@ -32,7 +32,7 @@ where
     pub fn create_twin(&self, ip: String) -> ApiResult<Option<Hash>> {
         let xt: UncheckedExtrinsicV4<_> =
             compose_extrinsic!(self.api.clone(), "TfgridModule", "create_twin", ip);
-        self.api.send_extrinsic(xt.hex_encode(), XtStatus::InBlock)
+        self.api.send_extrinsic(xt.hex_encode(), XtStatus::Ready)
     }
 
     pub fn get_twin_by_id(&self, id: u32) -> ApiResult<Twin<AccountId32>> {

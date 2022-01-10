@@ -1,6 +1,6 @@
 use clap::{App, Arg};
 use git_version::git_version;
-use keyring::AccountKeyring;
+use sp_core::crypto::Pair;
 use tfchain_client::AccountId32;
 
 extern crate tokio;
@@ -20,6 +20,13 @@ async fn main() {
                 .long("websocket")
                 .default_value("wss://tfchain.dev.grid.tf")
                 .help("substrate websocket connection"),
+        )
+        .arg(
+            Arg::new("mnemonic")
+                .value_name("MNEMONIC")
+                .short('m')
+                .long("mnemonic")
+                .help("mnemonic words"),
         )
         .subcommand(
             App::new("farms").about("Farm operations").subcommand(
@@ -75,19 +82,34 @@ async fn main() {
                             .takes_value(true)
                             .required(true),
                     ),
+                )
+                .subcommand(
+                    App::new("create").about("Create a twin").arg(
+                        Arg::new("ip")
+                            .help("An IP to create the twin with")
+                            .takes_value(true)
+                            .required(true),
+                    ),
                 ),
         )
         .get_matches();
 
     let websocket = matches.value_of("websocket").unwrap();
+    let key: (sp_core::sr25519::Pair, _) = Pair::generate();
+    let mut client = tfchain_client::Client::new(String::from(websocket), key.0);
+
+    // if mnemonic provided, load client with words
+    if let Some(mnemonic) = matches.values_of("mnemonic") {
+        let words: String = mnemonic.collect();
+        let key: (sp_core::sr25519::Pair, _) = Pair::from_phrase(words.as_str(), None).unwrap();
+        client = tfchain_client::Client::new(String::from(websocket), key.0);
+    }
 
     match matches.subcommand() {
         Some(("farms", farm_matches)) => {
             if let Some(get_farm) = farm_matches.subcommand_matches("get") {
                 match get_farm.value_of_t("farm_id") {
                     Ok(farm_id) => {
-                        let from = AccountKeyring::Alice.pair();
-                        let client = tfchain_client::Client::new(String::from(websocket), from);
                         let farm = client.get_farm_by_id(farm_id).unwrap();
                         println!("farm: {:?}", farm);
                     }
@@ -100,8 +122,6 @@ async fn main() {
         Some(("balance", account)) => {
             if let Some(get_balance) = account.subcommand_matches("get") {
                 let account = get_balance.value_of("account").unwrap();
-                let from = AccountKeyring::Alice.pair();
-                let client = tfchain_client::Client::new(String::from(websocket), from);
                 match account.parse::<AccountId32>() {
                     Ok(ref account) => {
                         let balance = client.get_account_free_balance(account).unwrap();
@@ -115,8 +135,6 @@ async fn main() {
         }
         Some(("node", node_data)) => {
             if let Some(get_node) = node_data.subcommand_matches("get") {
-                let from = AccountKeyring::Alice.pair();
-                let client = tfchain_client::Client::new(String::from(websocket), from);
                 match get_node.value_of_t("node_id") {
                     Ok(node_id) => {
                         let node = client.get_node_by_id(node_id).unwrap();
@@ -128,8 +146,6 @@ async fn main() {
         }
         Some(("contract", contract_data)) => {
             if let Some(get_contract) = contract_data.subcommand_matches("get") {
-                let from = AccountKeyring::Alice.pair();
-                let client = tfchain_client::Client::new(String::from(websocket), from);
                 match get_contract.value_of_t("contract_id") {
                     Ok(contract_id) => {
                         let contract = client.get_contract_by_id(contract_id).unwrap();
@@ -141,14 +157,21 @@ async fn main() {
         }
         Some(("twin", twin_data)) => {
             if let Some(get_twin) = twin_data.subcommand_matches("get") {
-                let from = AccountKeyring::Alice.pair();
-                let client = tfchain_client::Client::new(String::from(websocket), from);
                 match get_twin.value_of_t("twin_id") {
                     Ok(twin_id) => {
                         let twin = client.get_twin_by_id(twin_id).unwrap();
                         println!("{}", twin);
                     }
                     Err(e) => println!("could not parse twin_id: {}", e),
+                }
+            }
+            if let Some(create_twin) = twin_data.subcommand_matches("create") {
+                match create_twin.value_of_t("ip") {
+                    Ok(ip) => {
+                        let hash = client.create_twin(ip).unwrap();
+                        println!("transaction included in blockhash: {:?}", hash);
+                    }
+                    Err(e) => println!("could not parse ip: {}", e),
                 }
             }
         }
