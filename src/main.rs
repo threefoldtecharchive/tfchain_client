@@ -111,7 +111,7 @@ async fn main() {
                 match get_farm.value_of_t("farm_id") {
                     Ok(farm_id) => {
                         let farm = client.get_farm_by_id(farm_id).unwrap();
-                        println!("farm: {:?}", farm);
+                        println!("{}", farm);
                     }
                     Err(e) => {
                         println!("could not find farm: {}", e);

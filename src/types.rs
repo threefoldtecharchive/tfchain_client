@@ -279,3 +279,26 @@ impl Display for Node {
         )
     }
 }
+
+impl Display for Farm {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "Farm details for farm {} (ID: {})", self.name, self.id)?;
+        writeln!(f, "Twin ID: {}", self.twin_id)?;
+        writeln!(
+            f,
+            "Certification type {}",
+            match self.certification_type {
+                CertificationType::Diy => "DIY",
+                CertificationType::Certified => "Certified",
+            }
+        )?;
+        if !self.public_ips.is_empty() {
+            writeln!(f, "Public IPs:")?;
+            for ip in &self.public_ips {
+                writeln!(f, "\tIPv4: {} (gw: {})", ip.ip, ip.gateway)?;
+                writeln!(f, "\tContract id: {}", ip.contract_id)?;
+            }
+        }
+        writeln!(f, "version: {}", self.version)
+    }
+}
