@@ -125,7 +125,12 @@ async fn main() {
                 match account.parse::<AccountId32>() {
                     Ok(ref account) => {
                         let balance = client.get_account_free_balance(account).unwrap();
-                        println!("Free balance for account {}: {} TFT", account, balance);
+                        let info = format!(
+                            "{}.{}",
+                            balance.free / 1e7 as u128,
+                            balance.free % 1e7 as u128
+                        );
+                        println!("Free balance for account {}: {} TFT", account, info);
                     }
                     Err(e) => {
                         println!("{} is not a valid account ({})", account, e);

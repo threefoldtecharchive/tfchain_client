@@ -2,7 +2,7 @@ use chrono::prelude::*;
 use codec::{Decode, Encode};
 use std::fmt::{self, Display};
 pub use sp_core::crypto::AccountId32;
-pub use substrate_api_client::AccountInfo;
+pub use substrate_api_client::{AccountInfo, AccountData};
 pub use tfchain_tfgrid::types::{CertificationType, Resources};
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug)]

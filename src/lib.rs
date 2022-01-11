@@ -9,7 +9,7 @@ use substrate_api_client::{
 type ApiResult<T> = Result<T, ApiClientError>;
 
 mod types;
-use types::{AccountInfo, Farm, Node, Twin, Contract};
+use types::{AccountInfo, AccountData, Farm, Node, Twin, Contract};
 
 pub struct Client<P>
 where
@@ -74,18 +74,14 @@ where
         Ok(farm_id)
     }
 
-    pub fn get_account_free_balance(&self, account: &AccountId32) -> ApiResult<String> {
+    pub fn get_account_free_balance(&self, account: &AccountId32) -> ApiResult<AccountData> {
         let info: AccountInfo = self
             .api
             .get_storage_map("System", "Account", account, None)?
             .or_else(|| Some(AccountInfo::default()))
             .unwrap();
 
-        Ok(format!(
-            "{}.{}",
-            info.data.free / 1e7 as u128,
-            info.data.free % 1e7 as u128
-        ))
+        Ok(info.data)
     }
 
     pub fn get_node_by_id(&self, node_id: u32) -> ApiResult<Node> {
