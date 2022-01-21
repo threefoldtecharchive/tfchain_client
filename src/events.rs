@@ -59,8 +59,6 @@ impl From<runtime::Event> for TfchainEvent {
             | runtime::Event::pallet_session(_) => {
                 todo!()
             }
-        };
-
-        unimplemented!();
+        }
     }
 }
