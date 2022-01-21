@@ -9,6 +9,7 @@ use substrate_api_client::{
 
 type ApiResult<T> = Result<T, ApiClientError>;
 
+pub mod events;
 mod types;
 use types::{AccountData, AccountInfo, Contract, Farm, Node, Twin};
 
@@ -36,8 +37,8 @@ where
         self.api.send_extrinsic(xt.hex_encode(), XtStatus::Ready)
     }
 
-    pub fn get_twin_by_id(&self, id: u32) -> ApiResult<Twin<AccountId32>> {
-        let twin: Twin<AccountId32> = self
+    pub fn get_twin_by_id(&self, id: u32) -> ApiResult<Twin> {
+        let twin: Twin = self
             .api
             .get_storage_map("TfgridModule", "Twins", id, None)
             .unwrap()

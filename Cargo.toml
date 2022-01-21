@@ -20,14 +20,47 @@ hex = { version = "0.4", default-features = false }
 tokio = { version = "1.14.0", features = ["full"] }
 clap = "3.0.5"
 git-version = "0.3.5"
-tfchain_tfgrid = { git = "https://github.com/threefoldtech/tfchain", package = "pallet-tfgrid", branch = "development" }
 chrono = "0.4"
 
 [dependencies.runtime]
 git = "https://github.com/threefoldtech/tfchain"
 package = "tfchain-runtime"
 branch = "development"
-#path = "../tfchain/substrate-node/runtime"
+
+[dependencies.pallet_burning]
+git = "https://github.com/threefoldtech/tfchain"
+package = "pallet-burning"
+branch = "development"
+
+[dependencies.pallet_kvstore]
+git = "https://github.com/threefoldtech/tfchain"
+package = "pallet-kvstore"
+branch = "development"
+
+[dependencies.pallet_runtime_upgrade]
+git = "https://github.com/threefoldtech/tfchain"
+package = "pallet-runtime-upgrade"
+branch = "development"
+
+[dependencies.pallet_smart_contract]
+git = "https://github.com/threefoldtech/tfchain"
+package = "pallet-smart-contract"
+branch = "development"
+
+[dependencies.pallet_tfgrid]
+git = "https://github.com/threefoldtech/tfchain"
+package = "pallet-tfgrid"
+branch = "development"
+
+[dependencies.pallet_vesting_validator]
+git = "https://github.com/threefoldtech/tfchain"
+package = "pallet-vesting-validator"
+branch = "development"
+
+[dependencies.substrate_validator_set]
+git = "https://github.com/threefoldtech/tfchain"
+package = "substrate-validator-set"
+branch = "development"
 
 [dependencies.sp-core]
 version = "3.0.0"

@@ -2471,7 +2471,7 @@ dependencies = [
 [[package]]
 name = "pallet-tft-bridge"
 version = "1.0.0"
-source = "git+https://github.com/threefoldtech/tfchain_tft.git?branch=main#7b2493a05e3124f9f47632c565559c6796991c2d"
+source = "git+https://github.com/threefoldtech/tfchain_tft.git?branch=main#56ed0d03bdc5188bbd4985b7597150d3805ca839"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -2489,7 +2489,7 @@ dependencies = [
 [[package]]
 name = "pallet-tft-price"
 version = "1.0.0"
-source = "git+https://github.com/threefoldtech/tfchain_tft.git?branch=main#7b2493a05e3124f9f47632c565559c6796991c2d"
+source = "git+https://github.com/threefoldtech/tfchain_tft.git?branch=main#56ed0d03bdc5188bbd4985b7597150d3805ca839"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -2551,6 +2551,24 @@ dependencies = [
  "parity-scale-codec 2.3.1",
  "sp-api",
  "sp-runtime",
+]
+
+[[package]]
+name = "pallet-vesting-validator"
+version = "1.0.0"
+source = "git+https://github.com/threefoldtech/tfchain?branch=development#9c9d90f911b76e3bba511df56872fa50bfff12d4"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "lite-json",
+ "pallet-balances",
+ "pallet-timestamp",
+ "parity-scale-codec 2.3.1",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std 3.0.0",
+ "sp-storage",
 ]
 
 [[package]]
@@ -4393,11 +4411,17 @@ dependencies = [
  "frame-system",
  "git-version",
  "hex",
+ "pallet-burning",
+ "pallet-kvstore",
+ "pallet-runtime-upgrade",
+ "pallet-smart-contract",
  "pallet-tfgrid",
+ "pallet-vesting-validator",
  "parity-scale-codec 2.3.1",
  "sp-core",
  "sp-keyring",
  "substrate-api-client",
+ "substrate-validator-set",
  "tfchain-runtime",
  "tokio 1.15.0",
 ]
@@ -4664,7 +4688,7 @@ version = "1.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1f559b464de2e2bdabcac6a210d12e9b5a5973c251e102c44c585c71d51bd78e"
 dependencies = [
- "cfg-if 0.1.10",
+ "cfg-if 1.0.0",
  "rand 0.8.4",
  "static_assertions",
 ]
