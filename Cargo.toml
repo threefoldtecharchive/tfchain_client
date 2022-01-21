@@ -22,6 +22,11 @@ clap = "3.0.5"
 git-version = "0.3.5"
 chrono = "0.4"
 
+[dependencies.pallet_balance]
+git = "https://github.com/paritytech/substrate"
+package = "pallet-balances"
+version = "3.0.0"
+
 [dependencies.runtime]
 git = "https://github.com/threefoldtech/tfchain"
 package = "tfchain-runtime"
@@ -71,6 +76,10 @@ package = "frame-system"
 
 [dependencies.keyring]
 package = "sp-keyring"
+version = "3.0.0"
+
+[dependencies.support]
+package = "frame-support"
 version = "3.0.0"
 
 [patch.'https://github.com/paritytech/substrate']

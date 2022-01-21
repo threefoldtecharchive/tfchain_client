@@ -7,6 +7,7 @@
 //! This comes with the downside that we need to specify this generic parameter everywhere. As such,
 //! retyping them here allows us to effectively remove the parameter, as it is known here anyway.
 
+mod balance;
 mod burning;
 mod kvstore;
 mod runtime_upgrade;
@@ -16,6 +17,7 @@ mod tfgrid;
 mod validator_set;
 // mod vesting_validator;
 
+pub use balance::Event as BalanceEvent;
 pub use burning::Event as BurningEvent;
 pub use kvstore::Event as KVEvent;
 pub use runtime_upgrade::Event as RuntimeUpgradeEvent;
@@ -35,6 +37,7 @@ pub enum TfchainEvent {
     TFGrid(TFGridEvent),
     // VestingValidator(VestingValidatorEvent),
     ValidatorSet(ValidatorSetEvent),
+    Balance(BalanceEvent),
 }
 
 impl From<runtime::Event> for TfchainEvent {
@@ -49,8 +52,8 @@ impl From<runtime::Event> for TfchainEvent {
             runtime::Event::pallet_runtime_upgrade(rtue) => {
                 TfchainEvent::RuntimeUpgrade(rtue.into())
             }
-            runtime::Event::pallet_balances(_)
-            | runtime::Event::pallet_grandpa(_)
+            runtime::Event::pallet_balances(be) => TfchainEvent::Balance(be.into()),
+            runtime::Event::pallet_grandpa(_)
             | runtime::Event::pallet_sudo(_)
             | runtime::Event::pallet_tft_price(_)
             | runtime::Event::pallet_tft_bridge(_)

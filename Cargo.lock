@@ -4023,7 +4023,7 @@ checksum = "35391ea974fa5ee869cb094d5b437688fbf3d8127d64d1b9fed5822a1ed39b12"
 [[package]]
 name = "sp-std"
 version = "4.0.0"
-source = "git+https://github.com/paritytech/substrate.git#a991b0aecba1635861eaf104a7912f55fc1f323c"
+source = "git+https://github.com/paritytech/substrate#a991b0aecba1635861eaf104a7912f55fc1f323c"
 
 [[package]]
 name = "sp-storage"
@@ -4408,9 +4408,11 @@ version = "0.1.0"
 dependencies = [
  "chrono",
  "clap",
+ "frame-support",
  "frame-system",
  "git-version",
  "hex",
+ "pallet-balances",
  "pallet-burning",
  "pallet-kvstore",
  "pallet-runtime-upgrade",

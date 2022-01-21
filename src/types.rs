@@ -4,6 +4,7 @@ pub use pallet_tfgrid::types::{CertificationType, FarmingPolicy, Policy, Resourc
 pub use sp_core::crypto::AccountId32;
 use std::fmt::{self, Display};
 pub use substrate_api_client::{AccountData, AccountInfo};
+pub use support::traits::BalanceStatus;
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug)]
 pub struct PricingPolicy {
