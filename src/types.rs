@@ -1,6 +1,7 @@
 use chrono::prelude::*;
 use codec::{Decode, Encode};
 pub use pallet_tfgrid::types::{CertificationType, FarmingPolicy, Policy, Resources};
+pub use sp_application_crypto::ed25519;
 pub use sp_core::crypto::AccountId32;
 use std::fmt::{self, Display};
 pub use substrate_api_client::{AccountData, AccountInfo};
@@ -51,6 +52,15 @@ impl From<pallet_tfgrid::types::PricingPolicy<AccountId32>> for PricingPolicy {
         }
     }
 }
+
+/// A list of Grandpa authorities with associated weights.
+pub type AuthorityList = Vec<(AuthorityId, AuthorityWeight)>;
+
+/// The grandpa authority ID type.
+pub type AuthorityId = ed25519::Public;
+
+/// The weight of an authority.
+pub type AuthorityWeight = u64;
 
 #[derive(Debug)]
 pub struct Balance(u64);

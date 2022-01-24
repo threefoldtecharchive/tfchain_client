@@ -9,6 +9,7 @@
 
 mod balance;
 mod burning;
+mod grandpa;
 mod kvstore;
 mod runtime_upgrade;
 mod smart_contract;
@@ -19,6 +20,7 @@ mod validator_set;
 
 pub use balance::Event as BalanceEvent;
 pub use burning::Event as BurningEvent;
+pub use grandpa::Event as GrandpaEvent;
 pub use kvstore::Event as KVEvent;
 pub use runtime_upgrade::Event as RuntimeUpgradeEvent;
 pub use smart_contract::Event as SmartContractEvent;
@@ -38,6 +40,7 @@ pub enum TfchainEvent {
     // VestingValidator(VestingValidatorEvent),
     ValidatorSet(ValidatorSetEvent),
     Balance(BalanceEvent),
+    Grandpa(GrandpaEvent),
 }
 
 impl From<runtime::Event> for TfchainEvent {
@@ -53,8 +56,8 @@ impl From<runtime::Event> for TfchainEvent {
                 TfchainEvent::RuntimeUpgrade(rtue.into())
             }
             runtime::Event::pallet_balances(be) => TfchainEvent::Balance(be.into()),
-            runtime::Event::pallet_grandpa(_)
-            | runtime::Event::pallet_sudo(_)
+            runtime::Event::pallet_grandpa(ge) => TfchainEvent::Grandpa(ge.into()),
+            runtime::Event::pallet_sudo(_)
             | runtime::Event::pallet_tft_price(_)
             | runtime::Event::pallet_tft_bridge(_)
             | runtime::Event::pallet_scheduler(_)

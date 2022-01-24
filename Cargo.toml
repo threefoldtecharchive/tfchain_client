@@ -82,6 +82,14 @@ version = "3.0.0"
 package = "frame-support"
 version = "3.0.0"
 
+[dependencies.pallet_grandpa]
+package = "pallet-grandpa"
+version = "3.0.0"
+
+[dependencies.sp_application_crypto]
+package = "sp-application-crypto"
+version = "3.0.0"
+
 [patch.'https://github.com/paritytech/substrate']
 metadata = { package = "frame-metadata", version = "13.0.0", default-features = false }
 sp-version = { version = "3.0.0", default-features = false }
