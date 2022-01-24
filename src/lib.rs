@@ -1,7 +1,7 @@
+pub use crate::types::Hash;
 use runtime::Block;
 pub use sp_core::crypto::AccountId32;
 use sp_core::crypto::Pair;
-pub use sp_core::H256 as Hash;
 use substrate_api_client::sp_runtime::MultiSignature;
 use substrate_api_client::{
     compose_extrinsic, Api, ApiClientError, UncheckedExtrinsicV4, XtStatus,

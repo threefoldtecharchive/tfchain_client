@@ -90,6 +90,32 @@ version = "3.0.0"
 package = "sp-application-crypto"
 version = "3.0.0"
 
+[dependencies.pallet_sudo]
+package = "pallet-sudo"
+version = "3.0.0"
+
+[dependencies.pallet_collective]
+package = "pallet-collective"
+version = "3.0.0"
+
+[dependencies.pallet_scheduler]
+package = "pallet-scheduler"
+version = "3.0.0"
+
+[dependencies.pallet_session]
+package = "pallet-session"
+version = "3.0.0"
+
+[dependencies.pallet_tft_price]
+git = "https://github.com/threefoldtech/tfchain_tft"
+package = "pallet-tft-price"
+branch = "main"
+
+[dependencies.pallet_tft_bridge]
+git = "https://github.com/threefoldtech/tfchain_tft"
+package = "pallet-tft-bridge"
+branch = "main"
+
 [patch.'https://github.com/paritytech/substrate']
 metadata = { package = "frame-metadata", version = "13.0.0" }
 sp-version = { version = "3.0.0" }

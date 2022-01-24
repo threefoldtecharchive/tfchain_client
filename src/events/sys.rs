@@ -4,10 +4,10 @@ use sp_core::crypto::AccountId32;
 pub enum Event {
     /// An extrinsic completed successfully. \[info\]
     ExtrinsicSuccess,
-    // ExtrinsicSuccess(DispatchInfo),
+    //TODO: ExtrinsicSuccess(DispatchInfo),
     /// An extrinsic failed. \[error, info\]
     ExtrinsicFailed,
-    //ExtrinsicFailed(DispatchError, DispatchInfo),
+    //TODO: ExtrinsicFailed(DispatchError, DispatchInfo),
     /// `:code` was updated.
     CodeUpdated,
     /// A new \[account\] was created.

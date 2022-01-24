@@ -3,6 +3,7 @@ use codec::{Decode, Encode};
 pub use pallet_tfgrid::types::{CertificationType, FarmingPolicy, Policy, Resources};
 pub use sp_application_crypto::ed25519;
 pub use sp_core::crypto::AccountId32;
+pub use sp_core::H256 as Hash;
 use std::fmt::{self, Display};
 pub use substrate_api_client::{AccountData, AccountInfo};
 pub use support::traits::BalanceStatus;
@@ -612,6 +613,115 @@ impl From<pallet_tfgrid::types::CertificationCodeType> for CertificationCodeType
         match cct {
             pallet_tfgrid::types::CertificationCodeType::Farm => CertificationCodeType::Farm,
             pallet_tfgrid::types::CertificationCodeType::Entity => CertificationCodeType::Entity,
+        }
+    }
+}
+
+/// MintTransaction contains all the information about
+/// Stellar -> TF Chain minting transaction.
+/// if the votes field is larger then (number of validators / 2) + 1 , the transaction will be minted
+#[derive(Debug)]
+pub struct MintTransaction {
+    pub amount: Balance,
+    pub target: AccountId32,
+    pub block: BlockNumber,
+    pub votes: u32,
+}
+
+impl From<pallet_tft_bridge::MintTransaction<AccountId32, u32>> for MintTransaction {
+    fn from(mtx: pallet_tft_bridge::MintTransaction<AccountId32, u32>) -> Self {
+        let pallet_tft_bridge::MintTransaction {
+            amount,
+            target,
+            block,
+            votes,
+        } = mtx;
+        Self {
+            amount: amount.into(),
+            target,
+            block: block.into(),
+            votes,
+        }
+    }
+}
+
+/// BurnTransaction contains all the information about
+/// TF Chain -> Stellar burn transaction
+/// Transaction is ready when (number of validators / 2) + 1 signatures are present
+#[derive(Debug)]
+pub struct BurnTransaction {
+    pub block: BlockNumber,
+    pub amount: Balance,
+    pub target: Vec<u8>,
+    pub signatures: Vec<StellarSignature>,
+    pub sequence_number: u64,
+}
+
+impl From<pallet_tft_bridge::BurnTransaction<u32>> for BurnTransaction {
+    fn from(btx: pallet_tft_bridge::BurnTransaction<u32>) -> Self {
+        let pallet_tft_bridge::BurnTransaction {
+            block,
+            amount,
+            target,
+            signatures,
+            sequence_number,
+        } = btx;
+        Self {
+            block: block.into(),
+            amount: amount.into(),
+            target,
+            signatures: signatures.into_iter().map(StellarSignature::from).collect(),
+            sequence_number,
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct RefundTransaction {
+    pub block: BlockNumber,
+    pub amount: Balance,
+    pub target: Vec<u8>,
+    pub tx_hash: Vec<u8>,
+    pub signatures: Vec<StellarSignature>,
+    pub sequence_number: u64,
+}
+
+impl From<pallet_tft_bridge::RefundTransaction<u32>> for RefundTransaction {
+    fn from(rtx: pallet_tft_bridge::RefundTransaction<u32>) -> Self {
+        let pallet_tft_bridge::RefundTransaction {
+            block,
+            amount,
+            target,
+            tx_hash,
+            signatures,
+            sequence_number,
+        } = rtx;
+        Self {
+            block: block.into(),
+            amount: amount.into(),
+            target,
+            tx_hash,
+            signatures: signatures.into_iter().map(StellarSignature::from).collect(),
+            sequence_number,
+        }
+    }
+}
+
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug)]
+pub struct StellarSignature {
+    pub signature: Vec<u8>,
+    pub stellar_pub_key: Vec<u8>,
+}
+
+impl From<pallet_tft_bridge::StellarSignature> for StellarSignature {
+    fn from(ss: pallet_tft_bridge::StellarSignature) -> Self {
+        let pallet_tft_bridge::StellarSignature {
+            signature,
+            stellar_pub_key,
+        } = ss;
+        Self {
+            signature,
+            stellar_pub_key,
         }
     }
 }

@@ -2471,7 +2471,7 @@ dependencies = [
 [[package]]
 name = "pallet-tft-bridge"
 version = "1.0.0"
-source = "git+https://github.com/threefoldtech/tfchain_tft.git?branch=main#56ed0d03bdc5188bbd4985b7597150d3805ca839"
+source = "git+https://github.com/threefoldtech/tfchain_tft?branch=main#56ed0d03bdc5188bbd4985b7597150d3805ca839"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -2489,7 +2489,7 @@ dependencies = [
 [[package]]
 name = "pallet-tft-price"
 version = "1.0.0"
-source = "git+https://github.com/threefoldtech/tfchain_tft.git?branch=main#56ed0d03bdc5188bbd4985b7597150d3805ca839"
+source = "git+https://github.com/threefoldtech/tfchain_tft?branch=main#56ed0d03bdc5188bbd4985b7597150d3805ca839"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -4414,11 +4414,17 @@ dependencies = [
  "hex",
  "pallet-balances",
  "pallet-burning",
+ "pallet-collective",
  "pallet-grandpa",
  "pallet-kvstore",
  "pallet-runtime-upgrade",
+ "pallet-scheduler",
+ "pallet-session",
  "pallet-smart-contract",
+ "pallet-sudo",
  "pallet-tfgrid",
+ "pallet-tft-bridge",
+ "pallet-tft-price",
  "pallet-vesting-validator",
  "parity-scale-codec 2.3.1",
  "sp-application-crypto",
