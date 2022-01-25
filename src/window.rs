@@ -3,6 +3,7 @@
 use crate::client::SharedClient;
 use crate::events;
 use crate::types::{BlockNumber, Hash};
+use chrono::prelude::*;
 use sp_core::crypto::Pair;
 use substrate_api_client::sp_runtime::MultiSignature;
 use substrate_api_client::ApiClientError;
@@ -67,6 +68,12 @@ where
     /// Get the [events](events::TfchainEvent) for the block pointed at by the window.
     pub fn events(&self) -> WindowResult<Vec<events::TfchainEvent>> {
         Ok(self.client.get_block_events(self.hash())?)
+    }
+
+    /// Gets the date at which the block pointed to by this [Window] was made.
+    pub fn date(&self) -> WindowResult<DateTime<Utc>> {
+        let ts = self.client.block_timestamp(self.hash())?;
+        Ok(Utc.timestamp(ts as i64 / 1000, ts as u32 % 1000))
     }
 
     /// Helper function to get the active hash, for invoking client commands.

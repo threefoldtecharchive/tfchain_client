@@ -160,6 +160,13 @@ where
             .collect())
     }
 
+    pub fn block_timestamp(&self, block: Option<Hash>) -> ApiResult<u64> {
+        Ok(self
+            .api
+            .get_storage_value("Timestamp", "Now", block)?
+            .unwrap())
+    }
+
     pub fn get_hash_at_height(&self, height: BlockNumber) -> ApiResult<Option<Hash>> {
         let req = substrate_api_client::rpc::json_req::chain_get_block_hash(Some(height));
         let resp = self.api.get_request(req.to_string())?;
