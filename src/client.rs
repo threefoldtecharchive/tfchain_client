@@ -7,6 +7,7 @@ use crate::types::{AccountData, AccountInfo, BlockNumber, Contract, Farm, Node, 
 use runtime::Block;
 pub use sp_core::crypto::AccountId32;
 use sp_core::crypto::Pair;
+use std::sync::mpsc;
 use std::sync::Arc;
 use substrate_api_client::sp_runtime::MultiSignature;
 use substrate_api_client::{
@@ -180,5 +181,25 @@ where
                 Ok(Some(Hash::from(raw_hash)))
             }
         }
+    }
+
+    pub fn finalized_block_headers(&self) -> ApiResult<FinalizedHeadSubscription> {
+        let (heads_in, heads_out) = mpsc::channel();
+        self.api.subscribe_finalized_heads(heads_in)?;
+
+        Ok(FinalizedHeadSubscription { stream: heads_out })
+    }
+}
+
+pub struct FinalizedHeadSubscription {
+    stream: mpsc::Receiver<String>,
+}
+
+impl Iterator for FinalizedHeadSubscription {
+    type Item = runtime::Header;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let header_str = self.stream.recv().unwrap();
+        Some(serde_json::from_str(&header_str).unwrap())
     }
 }

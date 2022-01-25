@@ -3,12 +3,9 @@ use git_version::git_version;
 use sp_core::crypto::Pair;
 use tfchain_client::{types::BlockNumber, AccountId32};
 
-extern crate tokio;
-
 const GIT_VERSION: &str = git_version!(args = ["--tags", "--always", "--dirty=-modified"]);
 
-#[tokio::main]
-async fn main() {
+fn main() {
     let matches = App::new("tfchaincli")
         .author("ThreeFold Tech, https://github.com/threefoldtech")
         .version(GIT_VERSION)
@@ -111,6 +108,11 @@ async fn main() {
                             .required(true),
                     ),
                 ),
+        )
+        .subcommand(
+            App::new("subscribe")
+                .about("Subscriptions on chain")
+                .subcommand(App::new("finalized").about("Subscribe to finalized heads")),
         )
         .get_matches();
 
@@ -220,6 +222,17 @@ async fn main() {
                         }
                     }
                     None => println!("Missing block height"),
+                }
+            }
+        }
+        Some(("subscribe", sub_data)) => {
+            if let Some(_) = sub_data.subcommand_matches("finalized") {
+                let res = client.finalized_block_headers().unwrap();
+                for head in res {
+                    println!("{:?}", head);
+                    for event in client.get_block_events(Some(head.hash())).unwrap() {
+                        println!("{:?}", event);
+                    }
                 }
             }
         }
