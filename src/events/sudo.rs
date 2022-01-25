@@ -16,9 +16,7 @@ impl From<pallet_sudo::Event<runtime::Runtime>> for Event {
     fn from(se: pallet_sudo::Event<runtime::Runtime>) -> Self {
         match se {
             pallet_sudo::Event::<runtime::Runtime>::Sudid(_) => Event::Sudid,
-            pallet_sudo::Event::<runtime::Runtime>::KeyChanged(acc) => {
-                Event::KeyChanged(acc.into())
-            }
+            pallet_sudo::Event::<runtime::Runtime>::KeyChanged(acc) => Event::KeyChanged(acc),
             pallet_sudo::Event::<runtime::Runtime>::SudoAsDone(_) => Event::SudoAsDone,
         }
     }

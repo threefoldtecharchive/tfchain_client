@@ -1,7 +1,7 @@
 use clap::{App, Arg};
 use git_version::git_version;
 use sp_core::crypto::Pair;
-use tfchain_client::AccountId32;
+use tfchain_client::{types::BlockNumber, AccountId32};
 
 extern crate tokio;
 
@@ -102,6 +102,14 @@ async fn main() {
                             .takes_value(true)
                             .required(true),
                     ),
+                )
+                .subcommand(
+                    App::new("height").about("Get block hash at height").arg(
+                        Arg::new("block_height")
+                            .help("The height of the block for which to get the hash")
+                            .takes_value(true)
+                            .required(true),
+                    ),
                 ),
         )
         .get_matches();
@@ -198,12 +206,20 @@ async fn main() {
                     Some(block_hash) => {
                         let block = client.get_block_by_hash(block_hash).unwrap().unwrap();
                         println!("Block:\n{:#?}", block);
-                        println!(
-                            "Events:\n{:#?}",
-                            client.get_block_events(block_hash).unwrap()
-                        );
+                        println!("Events:\n{:#?}", client.get_block_events(None).unwrap());
                     }
                     None => println!("Missing block hash"),
+                }
+            } else if let Some(get_hash) = block_data.subcommand_matches("height") {
+                match get_hash.value_of("block_height") {
+                    Some(height) => {
+                        let height = height.parse::<BlockNumber>().unwrap();
+                        match client.get_hash_at_height(height).unwrap() {
+                            Some(hash) => println!("Hash at height {} is {}", height, hash),
+                            None => println!("No block at height {}", height),
+                        }
+                    }
+                    None => println!("Missing block height"),
                 }
             }
         }

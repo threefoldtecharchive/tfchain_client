@@ -47,7 +47,6 @@ pub enum TfchainEvent {
     RuntimeUpgrade(RuntimeUpgradeEvent),
     SmartContract(SmartContractEvent),
     TFGrid(TFGridEvent),
-    // VestingValidator(VestingValidatorEvent),
     ValidatorSet(ValidatorSetEvent),
     Balance(BalanceEvent),
     Grandpa(GrandpaEvent),

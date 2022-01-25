@@ -14,7 +14,7 @@ impl From<pallet_burning::Event<runtime::Runtime>> for Event {
                 amount,
                 block,
                 data,
-            ) => Event::TokensBurned(acc, (amount as u64).into(), block.into(), data),
+            ) => Event::TokensBurned(acc, (amount as u64).into(), block, data),
         }
     }
 }

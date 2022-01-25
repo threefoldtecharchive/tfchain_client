@@ -15,10 +15,10 @@ impl From<pallet_scheduler::Event<runtime::Runtime>> for Event {
     fn from(se: pallet_scheduler::Event<runtime::Runtime>) -> Self {
         match se {
             pallet_scheduler::Event::<runtime::Runtime>::Scheduled(block, idx) => {
-                Event::Scheduled(block.into(), idx)
+                Event::Scheduled(block, idx)
             }
             pallet_scheduler::Event::<runtime::Runtime>::Canceled(block, idx) => {
-                Event::Canceled(block.into(), idx)
+                Event::Canceled(block, idx)
             }
             pallet_scheduler::Event::<runtime::Runtime>::Dispatched(_, _, _) => Event::Dispatched,
         }

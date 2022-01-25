@@ -15,7 +15,7 @@ impl From<pallet_tft_price::Event<runtime::Runtime>> for Event {
                 Event::PriceStored(price.to_string().parse::<f64>().unwrap())
             }
             pallet_tft_price::Event::<runtime::Runtime>::OffchainWorkerExecuted(id) => {
-                Event::OffchainWorkerExecuted(id.into())
+                Event::OffchainWorkerExecuted(id)
             }
         }
     }

@@ -72,14 +72,7 @@ impl From<u64> for Balance {
     }
 }
 
-#[derive(Debug)]
-pub struct BlockNumber(u32);
-
-impl From<u32> for BlockNumber {
-    fn from(block: u32) -> Self {
-        BlockNumber(block)
-    }
-}
+pub type BlockNumber = u32;
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug)]
 pub struct Twin {
@@ -639,7 +632,7 @@ impl From<pallet_tft_bridge::MintTransaction<AccountId32, u32>> for MintTransact
         Self {
             amount: amount.into(),
             target,
-            block: block.into(),
+            block,
             votes,
         }
     }
@@ -667,7 +660,7 @@ impl From<pallet_tft_bridge::BurnTransaction<u32>> for BurnTransaction {
             sequence_number,
         } = btx;
         Self {
-            block: block.into(),
+            block,
             amount: amount.into(),
             target,
             signatures: signatures.into_iter().map(StellarSignature::from).collect(),
@@ -697,7 +690,7 @@ impl From<pallet_tft_bridge::RefundTransaction<u32>> for RefundTransaction {
             sequence_number,
         } = rtx;
         Self {
-            block: block.into(),
+            block,
             amount: amount.into(),
             target,
             tx_hash,
