@@ -53,7 +53,7 @@ where
     P: Pair,
     MultiSignature: From<P::Signature>,
 {
-    pub api: Api<P>,
+    inner: RawClient<P>,
 }
 
 impl<P> Client<P>
@@ -63,10 +63,201 @@ where
 {
     pub fn new(url: String, signer: P) -> Client<P> {
         let api = Api::new(url).unwrap().set_signer(signer);
-        Client { api }
+        Client {
+            inner: RawClient { api },
+        }
     }
 
-    pub fn create_twin(&self, ip: String) -> ApiResult<Option<Hash>> {
+    pub fn create_twin(&self, ip: &str) -> ApiResult<Option<Hash>> {
+        let mut res = self.inner.create_twin(ip);
+        for _ in 0..5 {
+            match res {
+                Err(ApiClientError::Disconnected(_)) => {}
+                x => return x,
+            }
+            res = self.inner.create_twin(ip);
+        }
+
+        res
+    }
+
+    pub fn get_twin_by_id(&self, id: u32) -> ApiResult<Twin> {
+        let mut res = self.inner.get_twin_by_id(id);
+        for _ in 0..5 {
+            match res {
+                Err(ApiClientError::Disconnected(_)) => {}
+                x => return x,
+            }
+            res = self.inner.get_twin_by_id(id);
+        }
+
+        res
+    }
+
+    pub fn create_farm(&self, name: &str) -> ApiResult<Option<Hash>> {
+        let mut res = self.inner.create_farm(name);
+        for _ in 0..5 {
+            match res {
+                Err(ApiClientError::Disconnected(_)) => {}
+                x => return x,
+            }
+            res = self.inner.create_farm(name);
+        }
+
+        res
+    }
+
+    pub fn get_farm_by_id(&self, id: u32) -> ApiResult<Farm> {
+        let mut res = self.inner.get_farm_by_id(id);
+        for _ in 0..5 {
+            match res {
+                Err(ApiClientError::Disconnected(_)) => {}
+                x => return x,
+            }
+            res = self.inner.get_farm_by_id(id);
+        }
+
+        res
+    }
+
+    pub fn get_farm_id_by_name(&self, name: &str) -> ApiResult<u32> {
+        let mut res = self.inner.get_farm_id_by_name(name);
+        for _ in 0..5 {
+            match res {
+                Err(ApiClientError::Disconnected(_)) => {}
+                x => return x,
+            }
+            res = self.inner.get_farm_id_by_name(name);
+        }
+
+        res
+    }
+
+    pub fn get_account_free_balance(&self, account: &AccountId32) -> ApiResult<AccountData> {
+        let mut res = self.inner.get_account_free_balance(account);
+        for _ in 0..5 {
+            match res {
+                Err(ApiClientError::Disconnected(_)) => {}
+                x => return x,
+            }
+            res = self.inner.get_account_free_balance(account);
+        }
+
+        res
+    }
+
+    pub fn get_node_by_id(&self, node_id: u32) -> ApiResult<Node> {
+        let mut res = self.inner.get_node_by_id(node_id);
+        for _ in 0..5 {
+            match res {
+                Err(ApiClientError::Disconnected(_)) => {}
+                x => return x,
+            }
+            res = self.inner.get_node_by_id(node_id);
+        }
+
+        res
+    }
+
+    pub fn get_contract_by_id(&self, contract_id: u64) -> ApiResult<Contract> {
+        let mut res = self.inner.get_contract_by_id(contract_id);
+        for _ in 0..5 {
+            match res {
+                Err(ApiClientError::Disconnected(_)) => {}
+                x => return x,
+            }
+            res = self.inner.get_contract_by_id(contract_id);
+        }
+
+        res
+    }
+
+    pub fn get_block_by_hash(&self, block_hash: &str) -> ApiResult<Option<Block>> {
+        let mut res = self.inner.get_block_by_hash(block_hash);
+        for _ in 0..5 {
+            match res {
+                Err(ApiClientError::Disconnected(_)) => {}
+                x => return x,
+            }
+            res = self.inner.get_block_by_hash(block_hash);
+        }
+
+        res
+    }
+
+    pub fn get_block_events(&self, block: Option<Hash>) -> ApiResult<Vec<TfchainEvent>> {
+        let mut res = self.inner.get_block_events(block);
+        for _ in 0..5 {
+            match res {
+                Err(ApiClientError::Disconnected(_)) => {}
+                x => return x,
+            }
+            res = self.inner.get_block_events(block);
+        }
+
+        res
+    }
+
+    pub fn block_timestamp(&self, block: Option<Hash>) -> ApiResult<u64> {
+        let mut res = self.inner.block_timestamp(block);
+        for _ in 0..5 {
+            match res {
+                Err(ApiClientError::Disconnected(_)) => {}
+                x => return x,
+            }
+            res = self.inner.block_timestamp(block);
+        }
+
+        res
+    }
+
+    pub fn get_hash_at_height(&self, height: BlockNumber) -> ApiResult<Option<Hash>> {
+        let mut res = self.inner.get_hash_at_height(height);
+        for _ in 0..5 {
+            match res {
+                Err(ApiClientError::Disconnected(_)) => {}
+                x => return x,
+            }
+            res = self.inner.get_hash_at_height(height);
+        }
+
+        res
+    }
+
+    pub fn finalized_block_headers(&self) -> ApiResult<FinalizedHeadSubscription> {
+        // TODO: what if subscription breaks
+        let mut res = self.inner.finalized_block_headers();
+        for _ in 0..5 {
+            match res {
+                Err(ApiClientError::Disconnected(_)) => {}
+                x => return x,
+            }
+            res = self.inner.finalized_block_headers();
+        }
+
+        res
+    }
+}
+
+pub struct RawClient<P>
+where
+    P: Pair,
+    MultiSignature: From<P::Signature>,
+{
+    pub api: Api<P>,
+}
+
+impl<P> RawClient<P>
+where
+    P: Pair,
+    MultiSignature: From<P::Signature>,
+{
+    pub fn new(url: String, signer: P) -> RawClient<P> {
+        let api = Api::new(url).unwrap().set_signer(signer);
+        RawClient { api }
+    }
+
+    pub fn create_twin(&self, ip: &str) -> ApiResult<Option<Hash>> {
         let xt: UncheckedExtrinsicV4<_> =
             compose_extrinsic!(self.api.clone(), "TfgridModule", "create_twin", ip);
         self.api.send_extrinsic(xt.hex_encode(), XtStatus::Ready)
@@ -83,7 +274,7 @@ where
         Ok(twin)
     }
 
-    pub fn create_farm(&self, name: String) -> ApiResult<Option<Hash>> {
+    pub fn create_farm(&self, name: &str) -> ApiResult<Option<Hash>> {
         let xt: UncheckedExtrinsicV4<_> =
             compose_extrinsic!(self.api.clone(), "TfgridModule", "create_farm", name);
         self.api.send_extrinsic(xt.hex_encode(), XtStatus::InBlock)
@@ -100,7 +291,7 @@ where
         Ok(farm)
     }
 
-    pub fn get_farm_id_by_name(&self, name: String) -> ApiResult<u32> {
+    pub fn get_farm_id_by_name(&self, name: &str) -> ApiResult<u32> {
         let farm_id: u32 = self
             .api
             .get_storage_map("TfgridModule", "FarmIdByName", name, None)
@@ -174,7 +365,6 @@ where
         match resp {
             None => Ok(None),
             Some(hash_str) => {
-                println!("resp {} {}", hash_str, hash_str.len());
                 let mut raw_hash = [0; 32];
                 // TODO: this could be improved
                 hex::decode_to_slice(&hash_str[3..67], &mut raw_hash).unwrap();
