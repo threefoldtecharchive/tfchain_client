@@ -5,6 +5,7 @@ use crate::events;
 use crate::types::{BlockNumber, Hash};
 use chrono::prelude::*;
 use sp_core::crypto::Pair;
+use std::fmt;
 use substrate_api_client::sp_runtime::MultiSignature;
 use substrate_api_client::ApiClientError;
 
@@ -43,12 +44,23 @@ where
         self.target.is_some()
     }
 
-    /// Get the next {window], i.e. the [Window] for the next block. Repeatedly calling `next` can
+    /// Get the next [window], i.e. the [Window] for the next block. Repeatedly calling `next` can
     /// be used to iterate over all blocks in the chain.
-    pub fn next(&self) -> WindowResult<Option<Self>> {
+    pub fn advance(&self) -> WindowResult<Option<Self>> {
         let client = self.client.clone();
         if let Some((h, _)) = self.target {
             Self::at_height(client, h + 1)
+        } else {
+            Err(WindowError::NonHistoricWindow)
+        }
+    }
+
+    /// Get the [Window] pointing to the block `amount` blocks past the one pointed to by the
+    /// current [Window].
+    pub fn advance_by(&self, amount: BlockNumber) -> WindowResult<Option<Self>> {
+        let client = self.client.clone();
+        if let Some((h, _)) = self.target {
+            Self::at_height(client, h + amount)
         } else {
             Err(WindowError::NonHistoricWindow)
         }
@@ -65,6 +77,17 @@ where
         }
     }
 
+    /// Get the previous [Window], pointing to the block `amount` blocks before the one pointed to
+    /// by the current [Window].
+    pub fn previous_by(&self, amount: BlockNumber) -> WindowResult<Option<Self>> {
+        let client = self.client.clone();
+        if let Some((h, _)) = self.target {
+            Self::at_height(client, h - amount)
+        } else {
+            Err(WindowError::NonHistoricWindow)
+        }
+    }
+
     /// Get the [events](events::TfchainEvent) for the block pointed at by the window.
     pub fn events(&self) -> WindowResult<Vec<events::TfchainEvent>> {
         Ok(self.client.get_block_events(self.hash())?)
@@ -76,6 +99,15 @@ where
         Ok(Utc.timestamp(ts as i64 / 1000, ts as u32 % 1000))
     }
 
+    /// Get the height of the block pointed at by the current [Window].
+    pub fn height(&self) -> WindowResult<BlockNumber> {
+        if let Some((height, _)) = self.target {
+            Ok(height)
+        } else {
+            todo!();
+        }
+    }
+
     /// Helper function to get the active hash, for invoking client commands.
     fn hash(&self) -> Option<Hash> {
         self.target.map(|(_, h)| h)
@@ -83,12 +115,37 @@ where
 }
 
 /// A `WindowError` contains details about errors when working with [Window]s
+#[derive(Debug)]
 pub enum WindowError {
     /// An error while executing a call to the chain
     Api(ApiClientError),
     /// Result of trying to advance or go back from a [Window] pointing to the head of the current
     /// chain.
     NonHistoricWindow,
+}
+
+impl fmt::Display for WindowError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                WindowError::Api(ref apie) => apie as &dyn fmt::Display,
+                WindowError::NonHistoricWindow =>
+                    &"method call expected historic window, found window pointing to head"
+                        as &dyn fmt::Display,
+            }
+        )
+    }
+}
+
+impl std::error::Error for WindowError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        match self {
+            WindowError::Api(ref apie) => Some(apie),
+            _ => None,
+        }
+    }
 }
 
 impl From<ApiClientError> for WindowError {
