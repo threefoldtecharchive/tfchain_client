@@ -107,14 +107,14 @@ where
         res
     }
 
-    pub fn get_farm_by_id(&self, id: u32) -> ApiResult<Farm> {
-        let mut res = self.inner.get_farm_by_id(id);
+    pub fn get_farm_by_id(&self, id: u32, block: Option<Hash>) -> ApiResult<Option<Farm>> {
+        let mut res = self.inner.get_farm_by_id(id, block);
         for _ in 0..5 {
             match res {
                 Err(ApiClientError::Disconnected(_)) => {}
                 x => return x,
             }
-            res = self.inner.get_farm_by_id(id);
+            res = self.inner.get_farm_by_id(id, block);
         }
 
         res
@@ -128,6 +128,19 @@ where
                 x => return x,
             }
             res = self.inner.get_farm_id_by_name(name);
+        }
+
+        res
+    }
+
+    pub fn farm_count(&self, block: Option<Hash>) -> ApiResult<u32> {
+        let mut res = self.inner.farm_count(block);
+        for _ in 0..5 {
+            match res {
+                Err(ApiClientError::Disconnected(_)) => {}
+                x => return x,
+            }
+            res = self.inner.farm_count(block);
         }
 
         res
@@ -280,15 +293,8 @@ where
         self.api.send_extrinsic(xt.hex_encode(), XtStatus::InBlock)
     }
 
-    pub fn get_farm_by_id(&self, id: u32) -> ApiResult<Farm> {
-        let farm: Farm = self
-            .api
-            .get_storage_map("TfgridModule", "Farms", id, None)
-            .unwrap()
-            .or_else(|| Some(Farm::default()))
-            .unwrap();
-
-        Ok(farm)
+    pub fn get_farm_by_id(&self, id: u32, block: Option<Hash>) -> ApiResult<Option<Farm>> {
+        self.api.get_storage_map("TfgridModule", "Farms", id, block)
     }
 
     pub fn get_farm_id_by_name(&self, name: &str) -> ApiResult<u32> {
@@ -300,6 +306,13 @@ where
             .unwrap();
 
         Ok(farm_id)
+    }
+
+    pub fn farm_count(&self, block: Option<Hash>) -> ApiResult<u32> {
+        // Safety: farmID is initialized in genesis so this value is always set.
+        self.api
+            .get_storage_value("TfgridModule", "FarmID", block)
+            .map(|i| i.unwrap())
     }
 
     pub fn get_account_free_balance(&self, account: &AccountId32) -> ApiResult<AccountData> {

@@ -132,8 +132,11 @@ fn main() {
             if let Some(get_farm) = farm_matches.subcommand_matches("get") {
                 match get_farm.value_of_t("farm_id") {
                     Ok(farm_id) => {
-                        let farm = client.get_farm_by_id(farm_id).unwrap();
-                        println!("{}", farm);
+                        let farm = client.get_farm_by_id(farm_id, None).unwrap();
+                        match farm {
+                            Some(farm) => println!("{}", farm),
+                            None => println!("farm with id {} does not exist", farm_id),
+                        }
                     }
                     Err(e) => {
                         println!("could not find farm: {}", e);
@@ -193,9 +196,9 @@ fn main() {
                 }
             }
             if let Some(create_twin) = twin_data.subcommand_matches("create") {
-                match create_twin.value_of_t("ip") {
+                match create_twin.value_of_t::<String>("ip") {
                     Ok(ip) => {
-                        let hash = client.create_twin(ip).unwrap();
+                        let hash = client.create_twin(&ip).unwrap();
                         println!("transaction included in blockhash: {:?}", hash);
                     }
                     Err(e) => println!("could not parse ip: {}", e),

@@ -2,7 +2,7 @@
 
 use crate::client::SharedClient;
 use crate::events;
-use crate::types::{BlockNumber, Hash};
+use crate::types::{BlockNumber, Farm, Hash};
 use chrono::prelude::*;
 use sp_core::crypto::Pair;
 use std::fmt;
@@ -108,9 +108,61 @@ where
         }
     }
 
+    /// Get an iterator returning all farms in the current [Window]. If the [Window] is not
+    /// historic, slow consumption can lead to innacurate results.
+    pub fn farms(&self) -> WindowResult<FarmIterator<P>>
+    where
+        P: Pair,
+        MultiSignature: From<P::Signature>,
+    {
+        let amount = self.client.farm_count(self.hash())?;
+        Ok(FarmIterator {
+            client: self.client.clone(),
+            block: self.hash(),
+            amount,
+            current: 0,
+        })
+    }
+
     /// Helper function to get the active hash, for invoking client commands.
     fn hash(&self) -> Option<Hash> {
         self.target.map(|(_, h)| h)
+    }
+}
+
+pub struct FarmIterator<P>
+where
+    P: Pair,
+    MultiSignature: From<P::Signature>,
+{
+    client: SharedClient<P>,
+    block: Option<Hash>,
+    amount: u32,
+    current: u32,
+}
+
+impl<P> Iterator for FarmIterator<P>
+where
+    P: Pair,
+    MultiSignature: From<P::Signature>,
+{
+    type Item = WindowResult<Farm>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        // Farms start at index 1
+        self.current += 1;
+        if self.current > self.amount {
+            return None;
+        }
+
+        match self
+            .client
+            .get_farm_by_id(self.current, self.block)
+            .map_err(WindowError::from)
+        {
+            Ok(maybe_farm) => maybe_farm.map(Ok),
+            Err(err) => Some(Err(err)),
+        }
     }
 }
 
