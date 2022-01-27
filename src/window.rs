@@ -2,7 +2,7 @@
 
 use crate::client::SharedClient;
 use crate::events;
-use crate::types::{BlockNumber, Farm, Hash};
+use crate::types::{BlockNumber, Farm, Hash, Node};
 use chrono::prelude::*;
 use sp_core::crypto::Pair;
 use std::fmt;
@@ -124,9 +124,63 @@ where
         })
     }
 
+    /// Get an iterator returning all nodes in the current [Window]. If the [Window] is not
+    /// historic, slow consumption can lead to innacurate results.
+    pub fn nodes(&self) -> WindowResult<NodeIterator<P>>
+    where
+        P: Pair,
+        MultiSignature: From<P::Signature>,
+    {
+        let amount = self.client.farm_count(self.hash())?;
+        Ok(NodeIterator {
+            client: self.client.clone(),
+            block: self.hash(),
+            amount,
+            current: 0,
+        })
+    }
+
     /// Helper function to get the active hash, for invoking client commands.
     fn hash(&self) -> Option<Hash> {
         self.target.map(|(_, h)| h)
+    }
+}
+
+// TODO: these 2 iterators could technically be made generic, by taking a Fn with output type as
+// generic to the output of the iterator
+pub struct NodeIterator<P>
+where
+    P: Pair,
+    MultiSignature: From<P::Signature>,
+{
+    client: SharedClient<P>,
+    block: Option<Hash>,
+    amount: u32,
+    current: u32,
+}
+
+impl<P> Iterator for NodeIterator<P>
+where
+    P: Pair,
+    MultiSignature: From<P::Signature>,
+{
+    type Item = WindowResult<Node>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        // Nodes start at index 1
+        self.current += 1;
+        if self.current > self.amount {
+            return None;
+        }
+
+        match self
+            .client
+            .get_node_by_id(self.current, self.block)
+            .map_err(WindowError::from)
+        {
+            Ok(maybe_node) => maybe_node.map(Ok),
+            Err(err) => Some(Err(err)),
+        }
     }
 }
 

@@ -159,14 +159,27 @@ where
         res
     }
 
-    pub fn get_node_by_id(&self, node_id: u32) -> ApiResult<Node> {
-        let mut res = self.inner.get_node_by_id(node_id);
+    pub fn get_node_by_id(&self, node_id: u32, block: Option<Hash>) -> ApiResult<Option<Node>> {
+        let mut res = self.inner.get_node_by_id(node_id, block);
         for _ in 0..5 {
             match res {
                 Err(ApiClientError::Disconnected(_)) => {}
                 x => return x,
             }
-            res = self.inner.get_node_by_id(node_id);
+            res = self.inner.get_node_by_id(node_id, block);
+        }
+
+        res
+    }
+
+    pub fn node_count(&self, block: Option<Hash>) -> ApiResult<u32> {
+        let mut res = self.inner.node_count(block);
+        for _ in 0..5 {
+            match res {
+                Err(ApiClientError::Disconnected(_)) => {}
+                x => return x,
+            }
+            res = self.inner.node_count(block);
         }
 
         res
@@ -325,14 +338,16 @@ where
         Ok(info.data)
     }
 
-    pub fn get_node_by_id(&self, node_id: u32) -> ApiResult<Node> {
-        let node = self
-            .api
-            .get_storage_map("TfgridModule", "Nodes", node_id, None)?
-            .or_else(|| Some(Node::default()))
-            .unwrap();
+    pub fn get_node_by_id(&self, node_id: u32, block: Option<Hash>) -> ApiResult<Option<Node>> {
+        self.api
+            .get_storage_map("TfgridModule", "Nodes", node_id, block)
+    }
 
-        Ok(node)
+    pub fn node_count(&self, block: Option<Hash>) -> ApiResult<u32> {
+        // Safety: nodeID is initialized in genesis so this value is always set.
+        self.api
+            .get_storage_value("TfgridModule", "NodeID", block)
+            .map(|i| i.unwrap())
     }
 
     pub fn get_contract_by_id(&self, contract_id: u64) -> ApiResult<Contract> {

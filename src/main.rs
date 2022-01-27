@@ -166,10 +166,10 @@ fn main() {
         Some(("node", node_data)) => {
             if let Some(get_node) = node_data.subcommand_matches("get") {
                 match get_node.value_of_t("node_id") {
-                    Ok(node_id) => {
-                        let node = client.get_node_by_id(node_id).unwrap();
-                        println!("{}", node);
-                    }
+                    Ok(node_id) => match client.get_node_by_id(node_id, None).unwrap() {
+                        Some(node) => println!("{}", node),
+                        None => println!("no node found with id {}", node_id),
+                    },
                     Err(e) => println!("could not parse node_id: {}", e),
                 }
             }
