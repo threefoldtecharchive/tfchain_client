@@ -131,7 +131,7 @@ where
         P: Pair,
         MultiSignature: From<P::Signature>,
     {
-        let amount = self.client.farm_count(self.hash())?;
+        let amount = self.client.node_count(self.hash())?;
         Ok(NodeIterator {
             client: self.client.clone(),
             block: self.hash(),
@@ -167,19 +167,24 @@ where
     type Item = WindowResult<Node>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        // Nodes start at index 1
-        self.current += 1;
-        if self.current > self.amount {
-            return None;
-        }
+        loop {
+            // Nodes start at index 1
+            self.current += 1;
+            if self.current > self.amount {
+                return None;
+            }
 
-        match self
-            .client
-            .get_node_by_id(self.current, self.block)
-            .map_err(WindowError::from)
-        {
-            Ok(maybe_node) => maybe_node.map(Ok),
-            Err(err) => Some(Err(err)),
+            return match self
+                .client
+                .get_node_by_id(self.current, self.block)
+                .map_err(WindowError::from)
+            {
+                Ok(maybe_node) => match maybe_node {
+                    Some(node) => Some(Ok(node)),
+                    None => continue,
+                },
+                Err(err) => Some(Err(err)),
+            };
         }
     }
 }
@@ -203,19 +208,24 @@ where
     type Item = WindowResult<Farm>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        // Farms start at index 1
-        self.current += 1;
-        if self.current > self.amount {
-            return None;
-        }
+        loop {
+            // Farms start at index 1
+            self.current += 1;
+            if self.current > self.amount {
+                return None;
+            }
 
-        match self
-            .client
-            .get_farm_by_id(self.current, self.block)
-            .map_err(WindowError::from)
-        {
-            Ok(maybe_farm) => maybe_farm.map(Ok),
-            Err(err) => Some(Err(err)),
+            return match self
+                .client
+                .get_farm_by_id(self.current, self.block)
+                .map_err(WindowError::from)
+            {
+                Ok(maybe_farm) => match maybe_farm {
+                    Some(farm) => Some(Ok(farm)),
+                    None => continue,
+                },
+                Err(err) => Some(Err(err)),
+            };
         }
     }
 }

@@ -6,13 +6,14 @@ pub use crate::types::Hash;
 use crate::types::{AccountData, AccountInfo, BlockNumber, Contract, Farm, Node, Twin};
 use runtime::Block;
 pub use sp_core::crypto::AccountId32;
-use sp_core::crypto::Pair;
 use std::sync::mpsc;
 use std::sync::Arc;
-use substrate_api_client::sp_runtime::MultiSignature;
 use substrate_api_client::{
     compose_extrinsic, Api, ApiClientError, UncheckedExtrinsicV4, XtStatus,
 };
+
+pub use sp_core::crypto::Pair;
+pub use substrate_api_client::sp_runtime::MultiSignature;
 
 const BLOCK_TIME_SECONDS: i64 = 6;
 
