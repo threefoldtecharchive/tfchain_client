@@ -14,6 +14,8 @@ use substrate_api_client::{
     compose_extrinsic, Api, ApiClientError, UncheckedExtrinsicV4, XtStatus,
 };
 
+const BLOCK_TIME_SECONDS: i64 = 6;
+
 pub type ApiResult<T> = Result<T, ApiClientError>;
 
 #[derive(Clone)]
@@ -61,8 +63,11 @@ where
     P: Pair,
     MultiSignature: From<P::Signature>,
 {
-    pub fn new(url: String, signer: P) -> Client<P> {
-        let api = Api::new(url).unwrap().set_signer(signer);
+    pub fn new(url: String, signer: Option<P>) -> Client<P> {
+        let mut api = Api::new(url).unwrap();
+        if let Some(signer) = signer {
+            api = api.set_signer(signer);
+        }
         Client {
             inner: RawClient { api },
         }
@@ -224,7 +229,7 @@ where
         res
     }
 
-    pub fn block_timestamp(&self, block: Option<Hash>) -> ApiResult<u64> {
+    pub fn block_timestamp(&self, block: Option<Hash>) -> ApiResult<i64> {
         let mut res = self.inner.block_timestamp(block);
         for _ in 0..5 {
             match res {
@@ -262,6 +267,61 @@ where
         }
 
         res
+    }
+
+    // Get the height just past the timestamp. i.e. `block_x_time | ts | block_x+1_time` returns
+    // block x+1
+    pub fn height_at_timestamp(&self, ts: i64) -> ApiResult<BlockNumber> {
+        // TODO: clean these unwraps, this assumes block 1 always exists (which is the case for
+        // now).
+        // SAFETY: sanity check that ts is smaller than the last height.
+        let latest_ts = self.block_timestamp(None)? / 1000;
+        if latest_ts < ts {
+            panic!(
+                "can't fetch block for future timestamp {} vs latest {}",
+                ts, latest_ts
+            );
+        }
+        let mut height = 1;
+        let mut last_height = 1;
+        loop {
+            let hash = match self.get_hash_at_height(height)? {
+                Some(hash) => hash,
+                // In case the network stalled we might be on a future block, try to fix that
+                None => {
+                    // Don't override last_height. That way we will incrementally approach
+                    // last_height as we go
+                    height = (height + last_height) / 2;
+                    continue;
+                }
+            };
+            // timestmap is in milliseconds
+            let block_time = self.block_timestamp(Some(hash))? / 1000;
+            let time_delta = ts - block_time;
+            let block_delta = time_delta / BLOCK_TIME_SECONDS;
+            if block_delta == 0 {
+                if time_delta >= 0 {
+                    // the timestamp is slightly before this block, so return the this block;
+                    return Ok((height + 1) as u32);
+                } else {
+                    // the timestamp is slightly past this block, so return the next block;
+                    return Ok(height as u32);
+                }
+            }
+            // check that the delta is in range
+            if (height as i64 + block_delta) < 0 {
+                panic!(
+                    "negative height search (height {} delta {})",
+                    height, block_delta
+                );
+            }
+
+            // adjust height
+            last_height = height;
+            // we can't just cast block_delta to u32 here, as that would misbehave in case delta is
+            // negative
+            height = (height as i64 + block_delta) as u32;
+        }
     }
 }
 
@@ -380,7 +440,7 @@ where
             .collect())
     }
 
-    pub fn block_timestamp(&self, block: Option<Hash>) -> ApiResult<u64> {
+    pub fn block_timestamp(&self, block: Option<Hash>) -> ApiResult<i64> {
         Ok(self
             .api
             .get_storage_value("Timestamp", "Now", block)?

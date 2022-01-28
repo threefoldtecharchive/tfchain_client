@@ -114,17 +114,22 @@ fn main() {
                 .about("Subscriptions on chain")
                 .subcommand(App::new("finalized").about("Subscribe to finalized heads")),
         )
+        .subcommand(
+            App::new("time")
+                .about("get block at time")
+                .arg(Arg::new("timestamp").takes_value(true).required(true)),
+        )
         .get_matches();
 
     let websocket = matches.value_of("websocket").unwrap();
     let key: (sp_core::sr25519::Pair, _) = Pair::generate();
-    let mut client = tfchain_client::Client::new(String::from(websocket), key.0);
+    let mut client = tfchain_client::Client::new(String::from(websocket), Some(key.0));
 
     // if mnemonic provided, load client with words
     if let Some(mnemonic) = matches.values_of("mnemonic") {
         let words: String = mnemonic.collect();
         let key: (sp_core::sr25519::Pair, _) = Pair::from_phrase(words.as_str(), None).unwrap();
-        client = tfchain_client::Client::new(String::from(websocket), key.0);
+        client = tfchain_client::Client::new(String::from(websocket), Some(key.0));
     }
 
     match matches.subcommand() {
@@ -239,6 +244,13 @@ fn main() {
                 }
             }
         }
+        Some(("time", ts)) => match ts.value_of_t("timestamp") {
+            Err(e) => println!("Could not read timestamp {}", e),
+            Ok(ts) => match client.height_at_timestamp(ts) {
+                Ok(height) => println!("timestamp {} is at height {}", ts, height),
+                Err(e) => println!("could not get height of timestamp {}: {}", ts, e),
+            },
+        },
         _ => unreachable!(), // If all subcommands are defined above, anything else is unreachable
     };
 }
