@@ -2,7 +2,7 @@
 
 use crate::client::SharedClient;
 use crate::events;
-use crate::types::{BlockNumber, Contract, Farm, Hash, Node};
+use crate::types::{BlockNumber, Contract, ContractState, Farm, Hash, Node};
 use chrono::prelude::*;
 use sp_core::crypto::Pair;
 use std::fmt;
@@ -132,13 +132,17 @@ where
         })
     }
 
-    pub fn contracts(&self) -> WindowResult<ContractIterator<P>> {
+    /// Get an iterator returning all contracts in the currnet [Window]. If the [Window] is not
+    /// historic, slow consumption can lead to innacurate results. If deployed is true, only
+    /// contracts currently deployed will be returned.
+    pub fn contracts(&self, live: bool) -> WindowResult<ContractIterator<P>> {
         let amount = self.client.contract_count(self.hash())?;
         Ok(ContractIterator {
             client: self.client.clone(),
             block: self.hash(),
             amount,
             current: 0,
+            live,
         })
     }
 
@@ -241,6 +245,7 @@ where
     block: Option<Hash>,
     amount: u64,
     current: u64,
+    live: bool,
 }
 
 impl<P> Iterator for ContractIterator<P>
@@ -264,7 +269,17 @@ where
                 .map_err(WindowError::from)
             {
                 Ok(maybe_contract) => match maybe_contract {
-                    Some(contract) => Some(Ok(contract)),
+                    Some(contract) => {
+                        if self.live {
+                            if matches!(contract.state, ContractState::Created) {
+                                Some(Ok(contract))
+                            } else {
+                                continue;
+                            }
+                        } else {
+                            Some(Ok(contract))
+                        }
+                    }
                     None => continue,
                 },
                 Err(err) => Some(Err(err)),
