@@ -191,14 +191,31 @@ where
         res
     }
 
-    pub fn get_contract_by_id(&self, contract_id: u64) -> ApiResult<Contract> {
-        let mut res = self.inner.get_contract_by_id(contract_id);
+    pub fn get_contract_by_id(
+        &self,
+        contract_id: u64,
+        block: Option<Hash>,
+    ) -> ApiResult<Option<Contract>> {
+        let mut res = self.inner.get_contract_by_id(contract_id, block);
         for _ in 0..5 {
             match res {
                 Err(ApiClientError::Disconnected(_)) => {}
                 x => return x,
             }
-            res = self.inner.get_contract_by_id(contract_id);
+            res = self.inner.get_contract_by_id(contract_id, block);
+        }
+
+        res
+    }
+
+    pub fn contract_count(&self, block: Option<Hash>) -> ApiResult<u64> {
+        let mut res = self.inner.contract_count(block);
+        for _ in 0..5 {
+            match res {
+                Err(ApiClientError::Disconnected(_)) => {}
+                x => return x,
+            }
+            res = self.inner.contract_count(block);
         }
 
         res
@@ -411,14 +428,20 @@ where
             .map(|i| i.unwrap())
     }
 
-    pub fn get_contract_by_id(&self, contract_id: u64) -> ApiResult<Contract> {
-        let contract = self
-            .api
-            .get_storage_map("SmartContractModule", "Contracts", contract_id, None)?
-            .or_else(|| Some(Contract::default()))
-            .unwrap();
+    pub fn get_contract_by_id(
+        &self,
+        contract_id: u64,
+        block: Option<Hash>,
+    ) -> ApiResult<Option<Contract>> {
+        self.api
+            .get_storage_map("SmartContractModule", "Contracts", contract_id, block)
+    }
 
-        Ok(contract)
+    pub fn contract_count(&self, block: Option<Hash>) -> ApiResult<u64> {
+        // Safety: contractID is initialized in genesis so this value is always set.
+        self.api
+            .get_storage_value("SmartContractModule", "ContractID", block)
+            .map(|i| i.unwrap())
     }
 
     pub fn get_block_by_hash(&self, block_hash: &str) -> ApiResult<Option<Block>> {

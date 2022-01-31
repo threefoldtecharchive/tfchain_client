@@ -183,8 +183,10 @@ fn main() {
             if let Some(get_contract) = contract_data.subcommand_matches("get") {
                 match get_contract.value_of_t("contract_id") {
                     Ok(contract_id) => {
-                        let contract = client.get_contract_by_id(contract_id).unwrap();
-                        println!("{}", contract);
+                        match client.get_contract_by_id(contract_id, None).unwrap() {
+                            Some(contract) => println!("{}", contract),
+                            None => println!("no contract found with id {}", contract_id),
+                        };
                     }
                     Err(e) => println!("could not parse contract_id: {}", e),
                 }

@@ -2,7 +2,7 @@
 
 use crate::client::SharedClient;
 use crate::events;
-use crate::types::{BlockNumber, Farm, Hash, Node};
+use crate::types::{BlockNumber, Contract, Farm, Hash, Node};
 use chrono::prelude::*;
 use sp_core::crypto::Pair;
 use std::fmt;
@@ -110,11 +110,7 @@ where
 
     /// Get an iterator returning all farms in the current [Window]. If the [Window] is not
     /// historic, slow consumption can lead to innacurate results.
-    pub fn farms(&self) -> WindowResult<FarmIterator<P>>
-    where
-        P: Pair,
-        MultiSignature: From<P::Signature>,
-    {
+    pub fn farms(&self) -> WindowResult<FarmIterator<P>> {
         let amount = self.client.farm_count(self.hash())?;
         Ok(FarmIterator {
             client: self.client.clone(),
@@ -126,13 +122,19 @@ where
 
     /// Get an iterator returning all nodes in the current [Window]. If the [Window] is not
     /// historic, slow consumption can lead to innacurate results.
-    pub fn nodes(&self) -> WindowResult<NodeIterator<P>>
-    where
-        P: Pair,
-        MultiSignature: From<P::Signature>,
-    {
+    pub fn nodes(&self) -> WindowResult<NodeIterator<P>> {
         let amount = self.client.node_count(self.hash())?;
         Ok(NodeIterator {
+            client: self.client.clone(),
+            block: self.hash(),
+            amount,
+            current: 0,
+        })
+    }
+
+    pub fn contracts(&self) -> WindowResult<ContractIterator<P>> {
+        let amount = self.client.contract_count(self.hash())?;
+        Ok(ContractIterator {
             client: self.client.clone(),
             block: self.hash(),
             amount,
@@ -146,7 +148,7 @@ where
     }
 }
 
-// TODO: these 2 iterators could technically be made generic, by taking a Fn with output type as
+// TODO: these 3 iterators could technically be made generic, by taking a Fn with output type as
 // generic to the output of the iterator
 pub struct NodeIterator<P>
 where
@@ -222,6 +224,47 @@ where
             {
                 Ok(maybe_farm) => match maybe_farm {
                     Some(farm) => Some(Ok(farm)),
+                    None => continue,
+                },
+                Err(err) => Some(Err(err)),
+            };
+        }
+    }
+}
+
+pub struct ContractIterator<P>
+where
+    P: Pair,
+    MultiSignature: From<P::Signature>,
+{
+    client: SharedClient<P>,
+    block: Option<Hash>,
+    amount: u64,
+    current: u64,
+}
+
+impl<P> Iterator for ContractIterator<P>
+where
+    P: Pair,
+    MultiSignature: From<P::Signature>,
+{
+    type Item = WindowResult<Contract>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        loop {
+            // Contracts start at index 1
+            self.current += 1;
+            if self.current > self.amount {
+                return None;
+            }
+
+            return match self
+                .client
+                .get_contract_by_id(self.current, self.block)
+                .map_err(WindowError::from)
+            {
+                Ok(maybe_contract) => match maybe_contract {
+                    Some(contract) => Some(Ok(contract)),
                     None => continue,
                 },
                 Err(err) => Some(Err(err)),
