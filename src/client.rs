@@ -441,7 +441,7 @@ where
         // Safety: contractID is initialized in genesis so this value is always set.
         self.api
             .get_storage_value("SmartContractModule", "ContractID", block)
-            .map(|i| i.unwrap())
+            .map(|i| i.unwrap_or(0))
     }
 
     pub fn get_block_by_hash(&self, block_hash: &str) -> ApiResult<Option<Block>> {
