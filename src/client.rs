@@ -221,6 +221,23 @@ where
         res
     }
 
+    pub fn get_farm_payout_address(
+        &self,
+        farm_id: u32,
+        block: Option<Hash>,
+    ) -> ApiResult<Option<String>> {
+        let mut res = self.inner.get_farm_payout_address(farm_id, block);
+        for _ in 0..5 {
+            match res {
+                Err(ApiClientError::Disconnected(_)) => {}
+                x => return x,
+            }
+            res = self.inner.get_farm_payout_address(farm_id, block);
+        }
+
+        res
+    }
+
     pub fn get_block_by_hash(&self, block_hash: &str) -> ApiResult<Option<Block>> {
         let mut res = self.inner.get_block_by_hash(block_hash);
         for _ in 0..5 {
@@ -442,6 +459,19 @@ where
         self.api
             .get_storage_value("SmartContractModule", "ContractID", block)
             .map(|i| i.unwrap_or(0))
+    }
+
+    pub fn get_farm_payout_address(
+        &self,
+        farm_id: u32,
+        block: Option<Hash>,
+    ) -> ApiResult<Option<String>> {
+        self.api.get_storage_map(
+            "TfgridModule",
+            "FarmPayoutV2AddressByFarmID",
+            farm_id,
+            block,
+        )
     }
 
     pub fn get_block_by_hash(&self, block_hash: &str) -> ApiResult<Option<Block>> {
