@@ -132,8 +132,8 @@ where
         })
     }
 
-    /// Get an iterator returning all contracts in the currnet [Window]. If the [Window] is not
-    /// historic, slow consumption can lead to innacurate results. If deployed is true, only
+    /// Get an iterator returning all contracts in the current [Window]. If the [Window] is not
+    /// historic, slow consumption can lead to inaccurate results. If deployed is true, only
     /// contracts currently deployed will be returned.
     pub fn contracts(&self, live: bool) -> WindowResult<ContractIterator<P>> {
         let amount = self.client.contract_count(self.hash())?;
@@ -144,6 +144,14 @@ where
             current: 0,
             live,
         })
+    }
+
+    /// Get the farm stellar address in the block pointed at by the current [Window].
+    ///
+    /// Setting this is optional and the responsibility of the farmer.
+    pub fn farm_payout_address(&self, farm_id: u32) -> WindowResult<Option<String>> {
+        let maybe_address = self.client.get_farm_payout_address(farm_id, self.hash())?;
+        Ok(maybe_address)
     }
 
     /// Helper function to get the active hash, for invoking client commands.
