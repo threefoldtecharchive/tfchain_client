@@ -67,6 +67,11 @@ git = "https://github.com/threefoldtech/tfchain"
 package = "substrate-validator-set"
 branch = "development"
 
+[dependencies.pallet_tft_price]
+git = "https://github.com/threefoldtech/tfchain"
+package = "pallet-tft-price"
+branch = "development"
+
 [dependencies.sp-core]
 version = "3.0.0"
 
@@ -106,13 +111,8 @@ version = "3.0.0"
 package = "pallet-session"
 version = "3.0.0"
 
-[dependencies.pallet_tft_price]
-git = "https://github.com/threefoldtech/tfchain_tft"
-package = "pallet-tft-price"
-branch = "main"
-
 [dependencies.pallet_tft_bridge]
-git = "https://github.com/threefoldtech/tfchain_tft"
+git = "https://github.com/threefoldtech/tfchain_tft_bridge"
 package = "pallet-tft-bridge"
 branch = "main"
 
