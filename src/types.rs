@@ -72,6 +72,13 @@ impl From<u64> for Balance {
     }
 }
 
+impl Balance {
+    /// Get the balance as the amount of units expressed as a u64.
+    pub fn as_u64(self) -> u64 {
+        self.0
+    }
+}
+
 pub type BlockNumber = u32;
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug)]
