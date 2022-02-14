@@ -57,11 +57,6 @@ git = "https://github.com/threefoldtech/tfchain"
 package = "pallet-tfgrid"
 branch = "development"
 
-[dependencies.pallet_vesting_validator]
-git = "https://github.com/threefoldtech/tfchain"
-package = "pallet-vesting-validator"
-branch = "development"
-
 [dependencies.substrate_validator_set]
 git = "https://github.com/threefoldtech/tfchain"
 package = "substrate-validator-set"
