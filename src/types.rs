@@ -231,6 +231,9 @@ pub struct Node {
     pub farming_policy_id: u32,
     pub interfaces: Vec<Interface>,
     pub certification_type: CertificationType,
+    pub secure_boot: bool,
+    pub virtualized: bool,
+    pub serial_number: String,
 }
 
 impl From<pallet_tfgrid::types::Node> for Node {
@@ -249,6 +252,9 @@ impl From<pallet_tfgrid::types::Node> for Node {
             farming_policy_id,
             interfaces,
             certification_type,
+            secure_boot,
+            virtualized,
+            serial_number,
         } = n;
         Self {
             version,
@@ -264,6 +270,9 @@ impl From<pallet_tfgrid::types::Node> for Node {
             farming_policy_id,
             interfaces: interfaces.into_iter().map(Interface::from).collect(),
             certification_type,
+            secure_boot,
+            virtualized,
+            serial_number: String::from_utf8_lossy(&serial_number).into(),
         }
     }
 }
@@ -867,19 +876,27 @@ impl Display for Node {
             }
         }
         if let Some(ref pub_config) = self.public_config {
-            writeln!(f, "Public config:")?;
-            writeln!(f, "\tIPv4: {} (gw: {})", pub_config.ipv4, pub_config.gw4)?;
-            writeln!(f, "\tIPv6: {} (gw: {})", pub_config.ipv4, pub_config.gw6)?;
-            writeln!(f, "\tDomain: {}", pub_config.domain)?;
+            f.pad("Public config:\n")?;
+            f.pad(&format!(
+                "\tIPv4: {} (gw: {})\n",
+                pub_config.ipv4, pub_config.gw4
+            ))?;
+            f.pad(&format!(
+                "\tIPv6: {} (gw: {})\n",
+                pub_config.ipv6, pub_config.gw6
+            ))?;
+            f.pad(&format!("\tDomain: {}\n", pub_config.domain))?;
         }
-        writeln!(
-            f,
-            "Certification type {}",
+        f.pad(&format!(
+            "Certification type {}\n",
             match self.certification_type {
                 CertificationType::Diy => "DIY",
                 CertificationType::Certified => "Certified",
             }
-        )
+        ))?;
+        f.pad(&format!("Secure boot enabled: {}\n", self.secure_boot))?;
+        f.pad(&format!("Virtualized: {}\n", self.virtualized))?;
+        f.pad(&format!("MOBO serial number: {}\n", self.serial_number))
     }
 }
 
