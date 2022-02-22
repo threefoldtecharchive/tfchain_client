@@ -523,6 +523,8 @@ where
     }
 }
 
+/// A subscription on finalized heads. This iterator will never finish naturally. If it does it
+/// indicates a receiving error, and the client should create a new subscription.
 pub struct FinalizedHeadSubscription {
     stream: mpsc::Receiver<String>,
 }
@@ -531,7 +533,7 @@ impl Iterator for FinalizedHeadSubscription {
     type Item = runtime::Header;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let header_str = self.stream.recv().unwrap();
+        let header_str = self.stream.recv().ok()?;
         Some(serde_json::from_str(&header_str).unwrap())
     }
 }
