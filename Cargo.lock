@@ -4382,6 +4382,7 @@ dependencies = [
  "sp-application-crypto",
  "sp-core",
  "sp-keyring",
+ "sp-runtime",
  "substrate-api-client",
  "substrate-validator-set",
  "tfchain-runtime",

@@ -15,23 +15,28 @@ pub type WindowResult<T> = Result<T, WindowError>;
 /// A `Window` gives a view into the blockchain storage at a certain point in time. If a window is
 /// pointed at a historic block, the values returned are guaranteed to not change. The only
 /// exception to this rule is in case of very recent blocks, which have not been finalized yet.
-pub struct Window<P, R>
+pub struct Window<P, E>
 where
     P: Pair,
     MultiSignature: From<P::Signature>,
 {
-    client: SharedClient<P, R>,
+    client: SharedClient<P, E>,
     target: Option<(BlockNumber, Hash)>,
 }
 
-impl<P, R> Window<P, R>
+impl<P, E> Window<P, E>
 where
     P: Pair,
     MultiSignature: From<P::Signature>,
+    E: support::Parameter + support::sp_runtime::traits::Member,
+    events::TfchainEvent: From<E>,
 {
     /// Create a new [Window] at the given height. If the used block height does not exist yet on
     /// the chain, Ok(None) is returned.
-    pub fn at_height(client: SharedClient<P, R>, height: BlockNumber) -> WindowResult<Option<Self>> {
+    pub fn at_height(
+        client: SharedClient<P, E>,
+        height: BlockNumber,
+    ) -> WindowResult<Option<Self>> {
         Ok(client.get_hash_at_height(height)?.map(|hash| Window {
             client,
             target: Some((height, hash)),
@@ -110,7 +115,7 @@ where
 
     /// Get an iterator returning all farms in the current [Window]. If the [Window] is not
     /// historic, slow consumption can lead to innacurate results.
-    pub fn farms(&self) -> WindowResult<FarmIterator<P, R>> {
+    pub fn farms(&self) -> WindowResult<FarmIterator<P, E>> {
         let amount = self.client.farm_count(self.hash())?;
         Ok(FarmIterator {
             client: self.client.clone(),
@@ -122,7 +127,7 @@ where
 
     /// Get an iterator returning all nodes in the current [Window]. If the [Window] is not
     /// historic, slow consumption can lead to innacurate results.
-    pub fn nodes(&self) -> WindowResult<NodeIterator<P, R>> {
+    pub fn nodes(&self) -> WindowResult<NodeIterator<P, E>> {
         let amount = self.client.node_count(self.hash())?;
         Ok(NodeIterator {
             client: self.client.clone(),
@@ -135,7 +140,7 @@ where
     /// Get an iterator returning all contracts in the current [Window]. If the [Window] is not
     /// historic, slow consumption can lead to inaccurate results. If deployed is true, only
     /// contracts currently deployed will be returned.
-    pub fn contracts(&self, live: bool) -> WindowResult<ContractIterator<P, R>> {
+    pub fn contracts(&self, live: bool) -> WindowResult<ContractIterator<P, E>> {
         let amount = self.client.contract_count(self.hash())?;
         Ok(ContractIterator {
             client: self.client.clone(),
@@ -162,21 +167,23 @@ where
 
 // TODO: these 3 iterators could technically be made generic, by taking a Fn with output type as
 // generic to the output of the iterator
-pub struct NodeIterator<P, R>
+pub struct NodeIterator<P, E>
 where
     P: Pair,
     MultiSignature: From<P::Signature>,
 {
-    client: SharedClient<P, R>,
+    client: SharedClient<P, E>,
     block: Option<Hash>,
     amount: u32,
     current: u32,
 }
 
-impl<P, R> Iterator for NodeIterator<P, R>
+impl<P, E> Iterator for NodeIterator<P, E>
 where
     P: Pair,
     MultiSignature: From<P::Signature>,
+    E: support::Parameter + support::sp_runtime::traits::Member,
+    events::TfchainEvent: From<E>,
 {
     type Item = WindowResult<Node>;
 
@@ -203,21 +210,23 @@ where
     }
 }
 
-pub struct FarmIterator<P, R>
+pub struct FarmIterator<P, E>
 where
     P: Pair,
     MultiSignature: From<P::Signature>,
 {
-    client: SharedClient<P, R>,
+    client: SharedClient<P, E>,
     block: Option<Hash>,
     amount: u32,
     current: u32,
 }
 
-impl<P, R> Iterator for FarmIterator<P, R>
+impl<P, E> Iterator for FarmIterator<P, E>
 where
     P: Pair,
     MultiSignature: From<P::Signature>,
+    E: support::Parameter + support::sp_runtime::traits::Member,
+    events::TfchainEvent: From<E>,
 {
     type Item = WindowResult<Farm>;
 
@@ -244,22 +253,24 @@ where
     }
 }
 
-pub struct ContractIterator<P, R>
+pub struct ContractIterator<P, E>
 where
     P: Pair,
     MultiSignature: From<P::Signature>,
 {
-    client: SharedClient<P, R>,
+    client: SharedClient<P, E>,
     block: Option<Hash>,
     amount: u64,
     current: u64,
     live: bool,
 }
 
-impl<P, R> Iterator for ContractIterator<P, R>
+impl<P, E> Iterator for ContractIterator<P, E>
 where
     P: Pair,
     MultiSignature: From<P::Signature>,
+    E: support::Parameter + support::sp_runtime::traits::Member,
+    events::TfchainEvent: From<E>,
 {
     type Item = WindowResult<Contract>;
 
@@ -334,4 +345,12 @@ impl From<ApiClientError> for WindowError {
     fn from(ace: ApiClientError) -> Self {
         WindowError::Api(ace)
     }
+}
+
+#[derive(Clone, Copy)]
+pub enum Network {
+    Main,
+    Test,
+    Dev,
+    Custom,
 }

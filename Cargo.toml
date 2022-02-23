@@ -111,6 +111,8 @@ git = "https://github.com/threefoldtech/tfchain_tft_bridge"
 package = "pallet-tft-bridge"
 branch = "main"
 
+[dependencies.sp-runtime]
+version = "3.0.0"
 
 [patch.'https://github.com/paritytech/substrate']
 metadata = { package = "frame-metadata", version = "13.0.0" }

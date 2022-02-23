@@ -19,27 +19,27 @@ const BLOCK_TIME_SECONDS: i64 = 6;
 
 pub type ApiResult<T> = Result<T, ApiClientError>;
 
-pub struct SharedClient<P, R>
+pub struct SharedClient<P, E>
 where
     P: Pair,
     MultiSignature: From<P::Signature>,
 {
-    inner: Arc<Client<P, R>>,
+    inner: Arc<Client<P, E>>,
 }
 
-impl<P, R> SharedClient<P, R>
+impl<P, E> SharedClient<P, E>
 where
     P: Pair,
     MultiSignature: From<P::Signature>,
 {
-    pub fn new(client: Client<P, R>) -> Self {
+    pub fn new(client: Client<P, E>) -> Self {
         Self {
             inner: Arc::new(client),
         }
     }
 }
 
-impl<P, R> Clone for SharedClient<P, R>
+impl<P, E> Clone for SharedClient<P, E>
 where
     P: Pair,
     MultiSignature: From<P::Signature>,
@@ -51,31 +51,33 @@ where
     }
 }
 
-impl<P, R> std::ops::Deref for SharedClient<P, R>
+impl<P, E> std::ops::Deref for SharedClient<P, E>
 where
     P: Pair,
     MultiSignature: From<P::Signature>,
 {
-    type Target = Client<P, R>;
+    type Target = Client<P, E>;
     fn deref(&self) -> &Self::Target {
         &self.inner
     }
 }
 
-pub struct Client<P, R>
+pub struct Client<P, E>
 where
     P: Pair,
     MultiSignature: From<P::Signature>,
 {
-    inner: RawClient<P, R>,
+    inner: RawClient<P, E>,
 }
 
-impl<P, R> Client<P, R>
+impl<P, E> Client<P, E>
 where
     P: Pair,
     MultiSignature: From<P::Signature>,
+    E: support::sp_runtime::traits::Member + support::Parameter,
+    TfchainEvent: From<E>,
 {
-    pub fn new(url: String, signer: Option<P>) -> Client<P, R> {
+    pub fn new(url: String, signer: Option<P>) -> Client<P, E> {
         let mut api = Api::new(url).unwrap();
         if let Some(signer) = signer {
             api = api.set_signer(signer);
@@ -374,21 +376,23 @@ where
     }
 }
 
-pub struct RawClient<P, R>
+pub struct RawClient<P, E>
 where
     P: Pair,
     MultiSignature: From<P::Signature>,
 {
     pub api: Api<P>,
-    _marker: std::marker::PhantomData<R>,
+    _marker: std::marker::PhantomData<E>,
 }
 
-impl<P, R> RawClient<P, R>
+impl<P, E> RawClient<P, E>
 where
     P: Pair,
     MultiSignature: From<P::Signature>,
+    E: support::Parameter + sp_runtime::traits::Member,
+    TfchainEvent: From<E>,
 {
-    pub fn new(url: String, signer: P) -> RawClient<P, R> {
+    pub fn new(url: String, signer: P) -> RawClient<P, E> {
         let api = Api::new(url).unwrap().set_signer(signer);
         RawClient {
             api,
@@ -501,7 +505,7 @@ where
     }
 
     pub fn get_block_events(&self, block: Option<Hash>) -> ApiResult<Vec<TfchainEvent>> {
-        let events: Vec<system::EventRecord<runtime::Event, Hash>> = self
+        let events: Vec<system::EventRecord<E, Hash>> = self
             .api
             .get_storage_value("System", "Events", block)?
             .unwrap();
