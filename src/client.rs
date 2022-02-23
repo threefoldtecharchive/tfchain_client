@@ -19,58 +19,72 @@ const BLOCK_TIME_SECONDS: i64 = 6;
 
 pub type ApiResult<T> = Result<T, ApiClientError>;
 
-#[derive(Clone)]
-pub struct SharedClient<P>
+pub struct SharedClient<P, R>
 where
     P: Pair,
     MultiSignature: From<P::Signature>,
 {
-    inner: Arc<Client<P>>,
+    inner: Arc<Client<P, R>>,
 }
 
-impl<P> SharedClient<P>
+impl<P, R> SharedClient<P, R>
 where
     P: Pair,
     MultiSignature: From<P::Signature>,
 {
-    pub fn new(client: Client<P>) -> Self {
+    pub fn new(client: Client<P, R>) -> Self {
         Self {
             inner: Arc::new(client),
         }
     }
 }
 
-impl<P> std::ops::Deref for SharedClient<P>
+impl<P, R> Clone for SharedClient<P, R>
 where
     P: Pair,
     MultiSignature: From<P::Signature>,
 {
-    type Target = Client<P>;
+    fn clone(&self) -> Self {
+        Self {
+            inner: self.inner.clone(),
+        }
+    }
+}
+
+impl<P, R> std::ops::Deref for SharedClient<P, R>
+where
+    P: Pair,
+    MultiSignature: From<P::Signature>,
+{
+    type Target = Client<P, R>;
     fn deref(&self) -> &Self::Target {
         &self.inner
     }
 }
 
-pub struct Client<P>
+pub struct Client<P, R>
 where
     P: Pair,
     MultiSignature: From<P::Signature>,
 {
-    inner: RawClient<P>,
+    inner: RawClient<P, R>,
 }
 
-impl<P> Client<P>
+impl<P, R> Client<P, R>
 where
     P: Pair,
     MultiSignature: From<P::Signature>,
 {
-    pub fn new(url: String, signer: Option<P>) -> Client<P> {
+    pub fn new(url: String, signer: Option<P>) -> Client<P, R> {
         let mut api = Api::new(url).unwrap();
         if let Some(signer) = signer {
             api = api.set_signer(signer);
         }
         Client {
-            inner: RawClient { api },
+            inner: RawClient {
+                api,
+                _marker: std::marker::PhantomData,
+            },
         }
     }
 
@@ -360,22 +374,26 @@ where
     }
 }
 
-pub struct RawClient<P>
+pub struct RawClient<P, R>
 where
     P: Pair,
     MultiSignature: From<P::Signature>,
 {
     pub api: Api<P>,
+    _marker: std::marker::PhantomData<R>,
 }
 
-impl<P> RawClient<P>
+impl<P, R> RawClient<P, R>
 where
     P: Pair,
     MultiSignature: From<P::Signature>,
 {
-    pub fn new(url: String, signer: P) -> RawClient<P> {
+    pub fn new(url: String, signer: P) -> RawClient<P, R> {
         let api = Api::new(url).unwrap().set_signer(signer);
-        RawClient { api }
+        RawClient {
+            api,
+            _marker: std::marker::PhantomData,
+        }
     }
 
     pub fn create_twin(&self, ip: &str) -> ApiResult<Option<Hash>> {

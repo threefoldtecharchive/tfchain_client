@@ -123,7 +123,8 @@ fn main() {
 
     let websocket = matches.value_of("websocket").unwrap();
     let key: (sp_core::sr25519::Pair, _) = Pair::generate();
-    let mut client = tfchain_client::Client::new(String::from(websocket), Some(key.0));
+    let mut client =
+        tfchain_client::Client::<_, runtime::Runtime>::new(String::from(websocket), Some(key.0));
 
     // if mnemonic provided, load client with words
     if let Some(mnemonic) = matches.values_of("mnemonic") {
