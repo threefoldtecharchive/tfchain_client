@@ -219,7 +219,10 @@ fn main() {
                     Some(block_hash) => {
                         let block = client.get_block_by_hash(block_hash).unwrap().unwrap();
                         println!("Block:\n{:#?}", block);
-                        println!("Events:\n{:#?}", client.get_block_events(None).unwrap());
+                        println!(
+                            "Events:\n{:#?}",
+                            client.get_block_events(Some(block.header.hash())).unwrap()
+                        );
                     }
                     None => println!("Missing block hash"),
                 }

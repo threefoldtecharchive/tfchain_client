@@ -37,6 +37,22 @@ where
             inner: Arc::new(client),
         }
     }
+
+    pub fn with_events<U>(self) -> SharedClient<P, U>
+    where
+        U: support::sp_runtime::traits::Member + support::Parameter,
+        TfchainEvent: From<U>,
+    {
+        // TODO: Improve this
+        SharedClient {
+            inner: Arc::new(Client {
+                inner: RawClient {
+                    api: self.inner.inner.api.clone(),
+                    _marker: std::marker::PhantomData,
+                },
+            }),
+        }
+    }
 }
 
 impl<P, E> Clone for SharedClient<P, E>

@@ -32,6 +32,11 @@ git = "https://github.com/threefoldtech/tfchain"
 package = "tfchain-runtime"
 branch = "development"
 
+[dependencies.runtime_legacy]
+git = "https://github.com/threefoldtech/tfchain"
+package = "tfchain-runtime"
+rev = "75a5a78"
+
 [dependencies.pallet_burning]
 git = "https://github.com/threefoldtech/tfchain"
 package = "pallet-burning"

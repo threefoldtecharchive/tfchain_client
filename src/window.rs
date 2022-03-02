@@ -33,10 +33,17 @@ where
 {
     /// Create a new [Window] at the given height. If the used block height does not exist yet on
     /// the chain, Ok(None) is returned.
-    pub fn at_height(
+    pub fn at_height<U>(
         client: SharedClient<P, E>,
         height: BlockNumber,
-    ) -> WindowResult<Option<Self>> {
+    ) -> WindowResult<Option<Window<P, U>>>
+    where
+        U: support::Parameter + support::sp_runtime::traits::Member,
+        events::TfchainEvent: From<U>,
+    {
+        // TODO: right height
+        //let client = client.with_events::<runtime_legacy::Event>();
+        let client = client.with_events::<U>();
         Ok(client.get_hash_at_height(height)?.map(|hash| Window {
             client,
             target: Some((height, hash)),
@@ -51,7 +58,11 @@ where
 
     /// Get the next [window], i.e. the [Window] for the next block. Repeatedly calling `next` can
     /// be used to iterate over all blocks in the chain.
-    pub fn advance(&self) -> WindowResult<Option<Self>> {
+    pub fn advance<U>(&self) -> WindowResult<Option<Window<P, U>>>
+    where
+        U: support::Parameter + support::sp_runtime::traits::Member,
+        events::TfchainEvent: From<U>,
+    {
         let client = self.client.clone();
         if let Some((h, _)) = self.target {
             Self::at_height(client, h + 1)
@@ -62,7 +73,11 @@ where
 
     /// Get the [Window] pointing to the block `amount` blocks past the one pointed to by the
     /// current [Window].
-    pub fn advance_by(&self, amount: BlockNumber) -> WindowResult<Option<Self>> {
+    pub fn advance_by<U>(&self, amount: BlockNumber) -> WindowResult<Option<Window<P, U>>>
+    where
+        U: support::Parameter + support::sp_runtime::traits::Member,
+        events::TfchainEvent: From<U>,
+    {
         let client = self.client.clone();
         if let Some((h, _)) = self.target {
             Self::at_height(client, h + amount)
@@ -73,7 +88,11 @@ where
 
     /// Get the previous [Window], i.e. the [Window] for the previous block. Repeatedly calling
     /// `previous` can be used to iterate over all blocks in the chain in reverse order.
-    pub fn previous(&self) -> WindowResult<Option<Self>> {
+    pub fn previous<U>(&self) -> WindowResult<Option<Window<P, U>>>
+    where
+        U: support::Parameter + support::sp_runtime::traits::Member,
+        events::TfchainEvent: From<U>,
+    {
         let client = self.client.clone();
         if let Some((h, _)) = self.target {
             Self::at_height(client, h - 1)
@@ -84,7 +103,11 @@ where
 
     /// Get the previous [Window], pointing to the block `amount` blocks before the one pointed to
     /// by the current [Window].
-    pub fn previous_by(&self, amount: BlockNumber) -> WindowResult<Option<Self>> {
+    pub fn previous_by<U>(&self, amount: BlockNumber) -> WindowResult<Option<Window<P, U>>>
+    where
+        U: support::Parameter + support::sp_runtime::traits::Member,
+        events::TfchainEvent: From<U>,
+    {
         let client = self.client.clone();
         if let Some((h, _)) = self.target {
             Self::at_height(client, h - amount)
