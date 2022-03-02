@@ -42,35 +42,70 @@ git = "https://github.com/threefoldtech/tfchain"
 package = "pallet-burning"
 branch = "development"
 
+[dependencies.pallet_burning_legacy]
+git = "https://github.com/threefoldtech/tfchain"
+package = "pallet-burning"
+rev = "75a5a78"
+
 [dependencies.pallet_kvstore]
 git = "https://github.com/threefoldtech/tfchain"
 package = "pallet-kvstore"
 branch = "development"
+
+[dependencies.pallet_kvstore_legacy]
+git = "https://github.com/threefoldtech/tfchain"
+package = "pallet-kvstore"
+rev = "75a5a78"
 
 [dependencies.pallet_runtime_upgrade]
 git = "https://github.com/threefoldtech/tfchain"
 package = "pallet-runtime-upgrade"
 branch = "development"
 
+[dependencies.pallet_runtime_upgrade_legacy]
+git = "https://github.com/threefoldtech/tfchain"
+package = "pallet-runtime-upgrade"
+rev = "75a5a78"
+
 [dependencies.pallet_smart_contract]
 git = "https://github.com/threefoldtech/tfchain"
 package = "pallet-smart-contract"
 branch = "development"
+
+[dependencies.pallet_smart_contract_legacy]
+git = "https://github.com/threefoldtech/tfchain"
+package = "pallet-smart-contract"
+rev = "75a5a78"
 
 [dependencies.pallet_tfgrid]
 git = "https://github.com/threefoldtech/tfchain"
 package = "pallet-tfgrid"
 branch = "development"
 
+[dependencies.pallet_tfgrid_legacy]
+git = "https://github.com/threefoldtech/tfchain"
+package = "pallet-tfgrid"
+rev = "75a5a78"
+
 [dependencies.substrate_validator_set]
 git = "https://github.com/threefoldtech/tfchain"
 package = "substrate-validator-set"
 branch = "development"
 
+[dependencies.substrate_validator_set_legacy]
+git = "https://github.com/threefoldtech/tfchain"
+package = "substrate-validator-set"
+rev = "75a5a78"
+
 [dependencies.pallet_tft_price]
 git = "https://github.com/threefoldtech/tfchain"
 package = "pallet-tft-price"
 branch = "development"
+
+[dependencies.pallet_tft_price_legacy]
+git = "https://github.com/threefoldtech/tfchain"
+package = "pallet-tft-price"
+rev = "75a5a78"
 
 [dependencies.sp-core]
 version = "3.0.0"

@@ -81,7 +81,7 @@ impl From<pallet_tfgrid::Event<runtime::Runtime>> for Event {
                 Event::CertificationCodeStored(cc.into())
             }
             pallet_tfgrid::Event::<runtime::Runtime>::FarmingPolicyStored(fp) => {
-                Event::FarmingPolicyStored(fp)
+                Event::FarmingPolicyStored(fp.into())
             }
             pallet_tfgrid::Event::<runtime::Runtime>::FarmPayoutV2AddressRegistered(
                 id,
