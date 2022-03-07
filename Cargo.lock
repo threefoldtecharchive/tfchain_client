@@ -2531,7 +2531,7 @@ dependencies = [
 [[package]]
 name = "pallet-tft-bridge"
 version = "1.0.0"
-source = "git+https://github.com/threefoldtech/tfchain_tft_bridge?branch=main#9316bf51ce8d9546bb7c14c308ed49a10fa6b179"
+source = "git+https://github.com/threefoldtech/tfchain_tft_bridge?branch=main#fb4d8e8ceb521d5b9d45e7a2abc2c2fee8fb6699"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -4835,7 +4835,7 @@ version = "1.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4ee73e6e4924fe940354b8d4d98cad5231175d615cd855b758adc658c0aac6a0"
 dependencies = [
- "cfg-if 1.0.0",
+ "cfg-if 0.1.10",
  "rand 0.8.5",
  "static_assertions",
 ]

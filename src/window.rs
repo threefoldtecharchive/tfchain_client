@@ -15,35 +15,29 @@ pub type WindowResult<T> = Result<T, WindowError>;
 /// A `Window` gives a view into the blockchain storage at a certain point in time. If a window is
 /// pointed at a historic block, the values returned are guaranteed to not change. The only
 /// exception to this rule is in case of very recent blocks, which have not been finalized yet.
-pub struct Window<P, E>
+pub struct Window<P>
 where
     P: Pair,
     MultiSignature: From<P::Signature>,
 {
-    client: SharedClient<P, E>,
+    client: EventTypedClient<P>,
     target: Option<(BlockNumber, Hash)>,
 }
 
-impl<P, E> Window<P, E>
+impl<P> Window<P>
 where
     P: Pair,
     MultiSignature: From<P::Signature>,
-    E: support::Parameter + support::sp_runtime::traits::Member,
-    events::TfchainEvent: From<E>,
 {
     /// Create a new [Window] at the given height. If the used block height does not exist yet on
     /// the chain, Ok(None) is returned.
-    pub fn at_height<U>(
-        client: SharedClient<P, E>,
-        height: BlockNumber,
-    ) -> WindowResult<Option<Window<P, U>>>
+    pub fn at_height<C>(client: C, height: BlockNumber) -> WindowResult<Option<Window<P>>>
     where
-        U: support::Parameter + support::sp_runtime::traits::Member,
-        events::TfchainEvent: From<U>,
+        C: Into<EventTypedClient<P>>,
     {
         // TODO: right height
         //let client = client.with_events::<runtime_legacy::Event>();
-        let client = client.with_events::<U>();
+        let client = client.into();
         Ok(client.get_hash_at_height(height)?.map(|hash| Window {
             client,
             target: Some((height, hash)),
@@ -58,11 +52,7 @@ where
 
     /// Get the next [window], i.e. the [Window] for the next block. Repeatedly calling `next` can
     /// be used to iterate over all blocks in the chain.
-    pub fn advance<U>(&self) -> WindowResult<Option<Window<P, U>>>
-    where
-        U: support::Parameter + support::sp_runtime::traits::Member,
-        events::TfchainEvent: From<U>,
-    {
+    pub fn advance(&self) -> WindowResult<Option<Window<P>>> {
         let client = self.client.clone();
         if let Some((h, _)) = self.target {
             Self::at_height(client, h + 1)
@@ -73,11 +63,7 @@ where
 
     /// Get the [Window] pointing to the block `amount` blocks past the one pointed to by the
     /// current [Window].
-    pub fn advance_by<U>(&self, amount: BlockNumber) -> WindowResult<Option<Window<P, U>>>
-    where
-        U: support::Parameter + support::sp_runtime::traits::Member,
-        events::TfchainEvent: From<U>,
-    {
+    pub fn advance_by(&self, amount: BlockNumber) -> WindowResult<Option<Window<P>>> {
         let client = self.client.clone();
         if let Some((h, _)) = self.target {
             Self::at_height(client, h + amount)
@@ -88,11 +74,7 @@ where
 
     /// Get the previous [Window], i.e. the [Window] for the previous block. Repeatedly calling
     /// `previous` can be used to iterate over all blocks in the chain in reverse order.
-    pub fn previous<U>(&self) -> WindowResult<Option<Window<P, U>>>
-    where
-        U: support::Parameter + support::sp_runtime::traits::Member,
-        events::TfchainEvent: From<U>,
-    {
+    pub fn previous(&self) -> WindowResult<Option<Window<P>>> {
         let client = self.client.clone();
         if let Some((h, _)) = self.target {
             Self::at_height(client, h - 1)
@@ -103,11 +85,7 @@ where
 
     /// Get the previous [Window], pointing to the block `amount` blocks before the one pointed to
     /// by the current [Window].
-    pub fn previous_by<U>(&self, amount: BlockNumber) -> WindowResult<Option<Window<P, U>>>
-    where
-        U: support::Parameter + support::sp_runtime::traits::Member,
-        events::TfchainEvent: From<U>,
-    {
+    pub fn previous_by(&self, amount: BlockNumber) -> WindowResult<Option<Window<P>>> {
         let client = self.client.clone();
         if let Some((h, _)) = self.target {
             Self::at_height(client, h - amount)
@@ -138,7 +116,7 @@ where
 
     /// Get an iterator returning all farms in the current [Window]. If the [Window] is not
     /// historic, slow consumption can lead to innacurate results.
-    pub fn farms(&self) -> WindowResult<FarmIterator<P, E>> {
+    pub fn farms(&self) -> WindowResult<FarmIterator<P>> {
         let amount = self.client.farm_count(self.hash())?;
         Ok(FarmIterator {
             client: self.client.clone(),
@@ -150,7 +128,7 @@ where
 
     /// Get an iterator returning all nodes in the current [Window]. If the [Window] is not
     /// historic, slow consumption can lead to innacurate results.
-    pub fn nodes(&self) -> WindowResult<NodeIterator<P, E>> {
+    pub fn nodes(&self) -> WindowResult<NodeIterator<P>> {
         let amount = self.client.node_count(self.hash())?;
         Ok(NodeIterator {
             client: self.client.clone(),
@@ -163,7 +141,7 @@ where
     /// Get an iterator returning all contracts in the current [Window]. If the [Window] is not
     /// historic, slow consumption can lead to inaccurate results. If deployed is true, only
     /// contracts currently deployed will be returned.
-    pub fn contracts(&self, live: bool) -> WindowResult<ContractIterator<P, E>> {
+    pub fn contracts(&self, live: bool) -> WindowResult<ContractIterator<P>> {
         let amount = self.client.contract_count(self.hash())?;
         Ok(ContractIterator {
             client: self.client.clone(),
@@ -190,23 +168,21 @@ where
 
 // TODO: these 3 iterators could technically be made generic, by taking a Fn with output type as
 // generic to the output of the iterator
-pub struct NodeIterator<P, E>
+pub struct NodeIterator<P>
 where
     P: Pair,
     MultiSignature: From<P::Signature>,
 {
-    client: SharedClient<P, E>,
+    client: EventTypedClient<P>,
     block: Option<Hash>,
     amount: u32,
     current: u32,
 }
 
-impl<P, E> Iterator for NodeIterator<P, E>
+impl<P> Iterator for NodeIterator<P>
 where
     P: Pair,
     MultiSignature: From<P::Signature>,
-    E: support::Parameter + support::sp_runtime::traits::Member,
-    events::TfchainEvent: From<E>,
 {
     type Item = WindowResult<Node>;
 
@@ -233,23 +209,21 @@ where
     }
 }
 
-pub struct FarmIterator<P, E>
+pub struct FarmIterator<P>
 where
     P: Pair,
     MultiSignature: From<P::Signature>,
 {
-    client: SharedClient<P, E>,
+    client: EventTypedClient<P>,
     block: Option<Hash>,
     amount: u32,
     current: u32,
 }
 
-impl<P, E> Iterator for FarmIterator<P, E>
+impl<P> Iterator for FarmIterator<P>
 where
     P: Pair,
     MultiSignature: From<P::Signature>,
-    E: support::Parameter + support::sp_runtime::traits::Member,
-    events::TfchainEvent: From<E>,
 {
     type Item = WindowResult<Farm>;
 
@@ -276,24 +250,22 @@ where
     }
 }
 
-pub struct ContractIterator<P, E>
+pub struct ContractIterator<P>
 where
     P: Pair,
     MultiSignature: From<P::Signature>,
 {
-    client: SharedClient<P, E>,
+    client: EventTypedClient<P>,
     block: Option<Hash>,
     amount: u64,
     current: u64,
     live: bool,
 }
 
-impl<P, E> Iterator for ContractIterator<P, E>
+impl<P> Iterator for ContractIterator<P>
 where
     P: Pair,
     MultiSignature: From<P::Signature>,
-    E: support::Parameter + support::sp_runtime::traits::Member,
-    events::TfchainEvent: From<E>,
 {
     type Item = WindowResult<Contract>;
 
@@ -376,4 +348,130 @@ pub enum Network {
     Test,
     Dev,
     Custom,
+}
+
+/// The client with actual event types.
+#[derive(Clone)]
+pub enum EventTypedClient<P>
+where
+    P: Pair,
+    MultiSignature: From<P::Signature>,
+{
+    Current(SharedClient<P, runtime::Event>),
+    Legacy(SharedClient<P, runtime_legacy::Event>),
+}
+
+impl<P> EventTypedClient<P>
+where
+    P: Pair,
+    MultiSignature: From<P::Signature>,
+{
+    fn block_timestamp(&self, hash: Option<Hash>) -> crate::client::ApiResult<i64> {
+        match self {
+            EventTypedClient::Current(ref sc) => sc.block_timestamp(hash),
+            EventTypedClient::Legacy(ref sc) => sc.block_timestamp(hash),
+        }
+    }
+
+    fn get_farm_by_id(
+        &self,
+        farm_id: u32,
+        block: Option<Hash>,
+    ) -> crate::client::ApiResult<Option<Farm>> {
+        match self {
+            EventTypedClient::Current(ref sc) => sc.get_farm_by_id(farm_id, block),
+            EventTypedClient::Legacy(ref sc) => sc.get_farm_by_id(farm_id, block),
+        }
+    }
+
+    fn get_node_by_id(
+        &self,
+        node_id: u32,
+        block: Option<Hash>,
+    ) -> crate::client::ApiResult<Option<Node>> {
+        match self {
+            EventTypedClient::Current(ref sc) => sc.get_node_by_id(node_id, block),
+            EventTypedClient::Legacy(ref sc) => sc.get_node_by_id(node_id, block),
+        }
+    }
+
+    fn get_contract_by_id(
+        &self,
+        contract_id: u64,
+        block: Option<Hash>,
+    ) -> crate::client::ApiResult<Option<Contract>> {
+        match self {
+            EventTypedClient::Current(ref sc) => sc.get_contract_by_id(contract_id, block),
+            EventTypedClient::Legacy(ref sc) => sc.get_contract_by_id(contract_id, block),
+        }
+    }
+
+    fn get_farm_payout_address(
+        &self,
+        farm_id: u32,
+        block: Option<Hash>,
+    ) -> crate::client::ApiResult<Option<String>> {
+        match self {
+            EventTypedClient::Current(ref sc) => sc.get_farm_payout_address(farm_id, block),
+            EventTypedClient::Legacy(ref sc) => sc.get_farm_payout_address(farm_id, block),
+        }
+    }
+
+    fn contract_count(&self, block: Option<Hash>) -> crate::client::ApiResult<u64> {
+        match self {
+            EventTypedClient::Current(ref sc) => sc.contract_count(block),
+            EventTypedClient::Legacy(ref sc) => sc.contract_count(block),
+        }
+    }
+
+    fn node_count(&self, block: Option<Hash>) -> crate::client::ApiResult<u32> {
+        match self {
+            EventTypedClient::Current(ref sc) => sc.node_count(block),
+            EventTypedClient::Legacy(ref sc) => sc.node_count(block),
+        }
+    }
+
+    fn farm_count(&self, block: Option<Hash>) -> crate::client::ApiResult<u32> {
+        match self {
+            EventTypedClient::Current(ref sc) => sc.farm_count(block),
+            EventTypedClient::Legacy(ref sc) => sc.farm_count(block),
+        }
+    }
+
+    fn get_block_events(
+        &self,
+        block: Option<Hash>,
+    ) -> crate::client::ApiResult<Vec<events::TfchainEvent>> {
+        match self {
+            EventTypedClient::Current(ref sc) => sc.get_block_events(block),
+            EventTypedClient::Legacy(ref sc) => sc.get_block_events(block),
+        }
+    }
+
+    fn get_hash_at_height(&self, height: u32) -> crate::client::ApiResult<Option<Hash>> {
+        match self {
+            EventTypedClient::Current(ref sc) => sc.get_hash_at_height(height),
+            EventTypedClient::Legacy(ref sc) => sc.get_hash_at_height(height),
+        }
+    }
+}
+
+impl<P> From<SharedClient<P, runtime::Event>> for EventTypedClient<P>
+where
+    P: Pair,
+    MultiSignature: From<P::Signature>,
+{
+    fn from(sc: SharedClient<P, runtime::Event>) -> Self {
+        EventTypedClient::Current(sc)
+    }
+}
+
+impl<P> From<SharedClient<P, runtime_legacy::Event>> for EventTypedClient<P>
+where
+    P: Pair,
+    MultiSignature: From<P::Signature>,
+{
+    fn from(sc: SharedClient<P, runtime_legacy::Event>) -> Self {
+        EventTypedClient::Legacy(sc)
+    }
 }
