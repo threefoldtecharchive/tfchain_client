@@ -1,4 +1,5 @@
 pub use sp_core::crypto::AccountId32;
+pub use support;
 
 pub mod client;
 pub mod events;

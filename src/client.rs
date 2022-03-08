@@ -472,8 +472,24 @@ where
     }
 
     pub fn get_node_by_id(&self, node_id: u32, block: Option<Hash>) -> ApiResult<Option<Node>> {
+        // Try to decode all known node types here.
+        let res = self.api.get_storage_map::<_, pallet_tfgrid::types::Node>(
+            "TfgridModule",
+            "Nodes",
+            node_id,
+            block,
+        );
+        if res.is_ok() {
+            return Ok(res.unwrap().map(Node::from));
+        }
         self.api
-            .get_storage_map("TfgridModule", "Nodes", node_id, block)
+            .get_storage_map::<_, pallet_tfgrid_legacy::types::Node>(
+                "TfgridModule",
+                "Nodes",
+                node_id,
+                block,
+            )
+            .map(|pr| pr.map(Node::from))
     }
 
     pub fn node_count(&self, block: Option<Hash>) -> ApiResult<u32> {

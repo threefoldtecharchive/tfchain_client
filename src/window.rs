@@ -22,6 +22,7 @@ where
 {
     client: EventTypedClient<P>,
     target: Option<(BlockNumber, Hash)>,
+    network: Network,
 }
 
 impl<P> Window<P>
@@ -31,16 +32,43 @@ where
 {
     /// Create a new [Window] at the given height. If the used block height does not exist yet on
     /// the chain, Ok(None) is returned.
-    pub fn at_height<C>(client: C, height: BlockNumber) -> WindowResult<Option<Window<P>>>
+    pub fn at_height<C>(
+        client: C,
+        height: BlockNumber,
+        network: Network,
+    ) -> WindowResult<Option<Window<P>>>
     where
         C: Into<EventTypedClient<P>>,
     {
-        // TODO: right height
-        //let client = client.with_events::<runtime_legacy::Event>();
-        let client = client.into();
+        let client = match network {
+            Network::Main => {
+                if height < 778_177 {
+                    client.into().as_legacy()
+                } else {
+                    client.into().as_current()
+                }
+            }
+            Network::Test => {
+                if height < 1_806_581 {
+                    client.into().as_legacy()
+                } else {
+                    client.into().as_current()
+                }
+            }
+            Network::Dev => {
+                // TODO
+                if height < 1_500_000 {
+                    client.into().as_legacy()
+                } else {
+                    client.into().as_current()
+                }
+            }
+        };
+
         Ok(client.get_hash_at_height(height)?.map(|hash| Window {
             client,
             target: Some((height, hash)),
+            network,
         }))
     }
 
@@ -55,7 +83,7 @@ where
     pub fn advance(&self) -> WindowResult<Option<Window<P>>> {
         let client = self.client.clone();
         if let Some((h, _)) = self.target {
-            Self::at_height(client, h + 1)
+            Self::at_height(client, h + 1, self.network)
         } else {
             Err(WindowError::NonHistoricWindow)
         }
@@ -66,7 +94,7 @@ where
     pub fn advance_by(&self, amount: BlockNumber) -> WindowResult<Option<Window<P>>> {
         let client = self.client.clone();
         if let Some((h, _)) = self.target {
-            Self::at_height(client, h + amount)
+            Self::at_height(client, h + amount, self.network)
         } else {
             Err(WindowError::NonHistoricWindow)
         }
@@ -77,7 +105,7 @@ where
     pub fn previous(&self) -> WindowResult<Option<Window<P>>> {
         let client = self.client.clone();
         if let Some((h, _)) = self.target {
-            Self::at_height(client, h - 1)
+            Self::at_height(client, h - 1, self.network)
         } else {
             Err(WindowError::NonHistoricWindow)
         }
@@ -88,7 +116,7 @@ where
     pub fn previous_by(&self, amount: BlockNumber) -> WindowResult<Option<Window<P>>> {
         let client = self.client.clone();
         if let Some((h, _)) = self.target {
-            Self::at_height(client, h - amount)
+            Self::at_height(client, h - amount, self.network)
         } else {
             Err(WindowError::NonHistoricWindow)
         }
@@ -342,12 +370,12 @@ impl From<ApiClientError> for WindowError {
     }
 }
 
-#[derive(Clone, Copy)]
+/// Grid networks, mainly used to identify
+#[derive(Debug, Clone, Copy)]
 pub enum Network {
     Main,
     Test,
     Dev,
-    Custom,
 }
 
 /// The client with actual event types.
@@ -359,6 +387,29 @@ where
 {
     Current(SharedClient<P, runtime::Event>),
     Legacy(SharedClient<P, runtime_legacy::Event>),
+}
+
+/// State transition functions
+impl<P> EventTypedClient<P>
+where
+    P: Pair,
+    MultiSignature: From<P::Signature>,
+{
+    /// Convert a client to use the latest runtime, if it was not already using that.
+    fn as_current(self) -> Self {
+        match self {
+            EventTypedClient::Current(_) => self,
+            EventTypedClient::Legacy(sc) => EventTypedClient::Current(sc.with_events()),
+        }
+    }
+
+    /// Convert a client to use the legacy runtime, if it was not already using that.
+    fn as_legacy(self) -> Self {
+        match self {
+            EventTypedClient::Current(sc) => EventTypedClient::Legacy(sc.with_events()),
+            EventTypedClient::Legacy(_) => self,
+        }
+    }
 }
 
 impl<P> EventTypedClient<P>
