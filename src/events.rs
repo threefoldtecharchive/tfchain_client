@@ -46,7 +46,7 @@ pub enum TfchainEvent {
     KVStore(KVEvent),
     RuntimeUpgrade(RuntimeUpgradeEvent),
     SmartContract(SmartContractEvent),
-    TFGrid(TFGridEvent),
+    TFGrid(Box<TFGridEvent>),
     ValidatorSet(ValidatorSetEvent),
     Balance(BalanceEvent),
     Grandpa(GrandpaEvent),
@@ -56,6 +56,8 @@ pub enum TfchainEvent {
     Scheduler(SchedulerEvent),
     Collective(CollectiveEvent),
     Session(SessionEvent),
+    /// An event which the current library does not decode
+    Unknown,
 }
 
 impl From<runtime::Event> for TfchainEvent {
@@ -63,7 +65,7 @@ impl From<runtime::Event> for TfchainEvent {
         match e {
             runtime::Event::frame_system(se) => TfchainEvent::System(se.into()),
             runtime::Event::validatorset(vse) => TfchainEvent::ValidatorSet(vse.into()),
-            runtime::Event::pallet_tfgrid(tfge) => TfchainEvent::TFGrid(tfge.into()),
+            runtime::Event::pallet_tfgrid(tfge) => TfchainEvent::TFGrid(Box::new(tfge.into())),
             runtime::Event::pallet_burning(be) => TfchainEvent::Burning(be.into()),
             runtime::Event::pallet_kvstore(kve) => TfchainEvent::KVStore(kve.into()),
             runtime::Event::pallet_smart_contract(sce) => TfchainEvent::SmartContract(sce.into()),
@@ -78,6 +80,9 @@ impl From<runtime::Event> for TfchainEvent {
             runtime::Event::pallet_scheduler(se) => TfchainEvent::Scheduler(se.into()),
             runtime::Event::pallet_collective_Instance1(ce) => TfchainEvent::Collective(ce.into()),
             runtime::Event::pallet_session(se) => TfchainEvent::Session(se.into()),
+            // TODO, ignored for now
+            runtime::Event::pallet_membership_Instance1(_)
+            | runtime::Event::pallet_validator(_) => TfchainEvent::Unknown,
         }
     }
 }

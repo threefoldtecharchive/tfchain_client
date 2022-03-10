@@ -20,8 +20,9 @@ where
     P: Pair,
     MultiSignature: From<P::Signature>,
 {
-    client: SharedClient<P>,
+    client: EventTypedClient<P>,
     target: Option<(BlockNumber, Hash)>,
+    network: Network,
 }
 
 impl<P> Window<P>
@@ -31,10 +32,43 @@ where
 {
     /// Create a new [Window] at the given height. If the used block height does not exist yet on
     /// the chain, Ok(None) is returned.
-    pub fn at_height(client: SharedClient<P>, height: BlockNumber) -> WindowResult<Option<Self>> {
+    pub fn at_height<C>(
+        client: C,
+        height: BlockNumber,
+        network: Network,
+    ) -> WindowResult<Option<Window<P>>>
+    where
+        C: Into<EventTypedClient<P>>,
+    {
+        let client = match network {
+            Network::Main => {
+                if height < 778_177 {
+                    client.into().as_legacy()
+                } else {
+                    client.into().as_current()
+                }
+            }
+            Network::Test => {
+                if height < 1_806_581 {
+                    client.into().as_legacy()
+                } else {
+                    client.into().as_current()
+                }
+            }
+            Network::Dev => {
+                // TODO
+                if height < 1_500_000 {
+                    client.into().as_legacy()
+                } else {
+                    client.into().as_current()
+                }
+            }
+        };
+
         Ok(client.get_hash_at_height(height)?.map(|hash| Window {
             client,
             target: Some((height, hash)),
+            network,
         }))
     }
 
@@ -46,10 +80,10 @@ where
 
     /// Get the next [window], i.e. the [Window] for the next block. Repeatedly calling `next` can
     /// be used to iterate over all blocks in the chain.
-    pub fn advance(&self) -> WindowResult<Option<Self>> {
+    pub fn advance(&self) -> WindowResult<Option<Window<P>>> {
         let client = self.client.clone();
         if let Some((h, _)) = self.target {
-            Self::at_height(client, h + 1)
+            Self::at_height(client, h + 1, self.network)
         } else {
             Err(WindowError::NonHistoricWindow)
         }
@@ -57,10 +91,10 @@ where
 
     /// Get the [Window] pointing to the block `amount` blocks past the one pointed to by the
     /// current [Window].
-    pub fn advance_by(&self, amount: BlockNumber) -> WindowResult<Option<Self>> {
+    pub fn advance_by(&self, amount: BlockNumber) -> WindowResult<Option<Window<P>>> {
         let client = self.client.clone();
         if let Some((h, _)) = self.target {
-            Self::at_height(client, h + amount)
+            Self::at_height(client, h + amount, self.network)
         } else {
             Err(WindowError::NonHistoricWindow)
         }
@@ -68,10 +102,10 @@ where
 
     /// Get the previous [Window], i.e. the [Window] for the previous block. Repeatedly calling
     /// `previous` can be used to iterate over all blocks in the chain in reverse order.
-    pub fn previous(&self) -> WindowResult<Option<Self>> {
+    pub fn previous(&self) -> WindowResult<Option<Window<P>>> {
         let client = self.client.clone();
         if let Some((h, _)) = self.target {
-            Self::at_height(client, h - 1)
+            Self::at_height(client, h - 1, self.network)
         } else {
             Err(WindowError::NonHistoricWindow)
         }
@@ -79,10 +113,10 @@ where
 
     /// Get the previous [Window], pointing to the block `amount` blocks before the one pointed to
     /// by the current [Window].
-    pub fn previous_by(&self, amount: BlockNumber) -> WindowResult<Option<Self>> {
+    pub fn previous_by(&self, amount: BlockNumber) -> WindowResult<Option<Window<P>>> {
         let client = self.client.clone();
         if let Some((h, _)) = self.target {
-            Self::at_height(client, h - amount)
+            Self::at_height(client, h - amount, self.network)
         } else {
             Err(WindowError::NonHistoricWindow)
         }
@@ -167,7 +201,7 @@ where
     P: Pair,
     MultiSignature: From<P::Signature>,
 {
-    client: SharedClient<P>,
+    client: EventTypedClient<P>,
     block: Option<Hash>,
     amount: u32,
     current: u32,
@@ -208,7 +242,7 @@ where
     P: Pair,
     MultiSignature: From<P::Signature>,
 {
-    client: SharedClient<P>,
+    client: EventTypedClient<P>,
     block: Option<Hash>,
     amount: u32,
     current: u32,
@@ -249,7 +283,7 @@ where
     P: Pair,
     MultiSignature: From<P::Signature>,
 {
-    client: SharedClient<P>,
+    client: EventTypedClient<P>,
     block: Option<Hash>,
     amount: u64,
     current: u64,
@@ -333,5 +367,162 @@ impl std::error::Error for WindowError {
 impl From<ApiClientError> for WindowError {
     fn from(ace: ApiClientError) -> Self {
         WindowError::Api(ace)
+    }
+}
+
+/// Grid networks, mainly used to identify
+#[derive(Debug, Clone, Copy)]
+pub enum Network {
+    Main,
+    Test,
+    Dev,
+}
+
+/// The client with actual event types.
+#[derive(Clone)]
+pub enum EventTypedClient<P>
+where
+    P: Pair,
+    MultiSignature: From<P::Signature>,
+{
+    Current(SharedClient<P, runtime::Event>),
+    Legacy(SharedClient<P, runtime_legacy::Event>),
+}
+
+/// State transition functions
+impl<P> EventTypedClient<P>
+where
+    P: Pair,
+    MultiSignature: From<P::Signature>,
+{
+    /// Convert a client to use the latest runtime, if it was not already using that.
+    fn as_current(self) -> Self {
+        match self {
+            EventTypedClient::Current(_) => self,
+            EventTypedClient::Legacy(sc) => EventTypedClient::Current(sc.with_events()),
+        }
+    }
+
+    /// Convert a client to use the legacy runtime, if it was not already using that.
+    fn as_legacy(self) -> Self {
+        match self {
+            EventTypedClient::Current(sc) => EventTypedClient::Legacy(sc.with_events()),
+            EventTypedClient::Legacy(_) => self,
+        }
+    }
+}
+
+impl<P> EventTypedClient<P>
+where
+    P: Pair,
+    MultiSignature: From<P::Signature>,
+{
+    fn block_timestamp(&self, hash: Option<Hash>) -> crate::client::ApiResult<i64> {
+        match self {
+            EventTypedClient::Current(ref sc) => sc.block_timestamp(hash),
+            EventTypedClient::Legacy(ref sc) => sc.block_timestamp(hash),
+        }
+    }
+
+    fn get_farm_by_id(
+        &self,
+        farm_id: u32,
+        block: Option<Hash>,
+    ) -> crate::client::ApiResult<Option<Farm>> {
+        match self {
+            EventTypedClient::Current(ref sc) => sc.get_farm_by_id(farm_id, block),
+            EventTypedClient::Legacy(ref sc) => sc.get_farm_by_id(farm_id, block),
+        }
+    }
+
+    fn get_node_by_id(
+        &self,
+        node_id: u32,
+        block: Option<Hash>,
+    ) -> crate::client::ApiResult<Option<Node>> {
+        match self {
+            EventTypedClient::Current(ref sc) => sc.get_node_by_id(node_id, block),
+            EventTypedClient::Legacy(ref sc) => sc.get_node_by_id(node_id, block),
+        }
+    }
+
+    fn get_contract_by_id(
+        &self,
+        contract_id: u64,
+        block: Option<Hash>,
+    ) -> crate::client::ApiResult<Option<Contract>> {
+        match self {
+            EventTypedClient::Current(ref sc) => sc.get_contract_by_id(contract_id, block),
+            EventTypedClient::Legacy(ref sc) => sc.get_contract_by_id(contract_id, block),
+        }
+    }
+
+    fn get_farm_payout_address(
+        &self,
+        farm_id: u32,
+        block: Option<Hash>,
+    ) -> crate::client::ApiResult<Option<String>> {
+        match self {
+            EventTypedClient::Current(ref sc) => sc.get_farm_payout_address(farm_id, block),
+            EventTypedClient::Legacy(ref sc) => sc.get_farm_payout_address(farm_id, block),
+        }
+    }
+
+    fn contract_count(&self, block: Option<Hash>) -> crate::client::ApiResult<u64> {
+        match self {
+            EventTypedClient::Current(ref sc) => sc.contract_count(block),
+            EventTypedClient::Legacy(ref sc) => sc.contract_count(block),
+        }
+    }
+
+    fn node_count(&self, block: Option<Hash>) -> crate::client::ApiResult<u32> {
+        match self {
+            EventTypedClient::Current(ref sc) => sc.node_count(block),
+            EventTypedClient::Legacy(ref sc) => sc.node_count(block),
+        }
+    }
+
+    fn farm_count(&self, block: Option<Hash>) -> crate::client::ApiResult<u32> {
+        match self {
+            EventTypedClient::Current(ref sc) => sc.farm_count(block),
+            EventTypedClient::Legacy(ref sc) => sc.farm_count(block),
+        }
+    }
+
+    fn get_block_events(
+        &self,
+        block: Option<Hash>,
+    ) -> crate::client::ApiResult<Vec<events::TfchainEvent>> {
+        match self {
+            EventTypedClient::Current(ref sc) => sc.get_block_events(block),
+            EventTypedClient::Legacy(ref sc) => sc.get_block_events(block),
+        }
+    }
+
+    fn get_hash_at_height(&self, height: u32) -> crate::client::ApiResult<Option<Hash>> {
+        match self {
+            EventTypedClient::Current(ref sc) => sc.get_hash_at_height(height),
+            EventTypedClient::Legacy(ref sc) => sc.get_hash_at_height(height),
+        }
+    }
+}
+
+impl<P> From<SharedClient<P, runtime::Event>> for EventTypedClient<P>
+where
+    P: Pair,
+    MultiSignature: From<P::Signature>,
+{
+    fn from(sc: SharedClient<P, runtime::Event>) -> Self {
+        EventTypedClient::Current(sc)
+    }
+}
+
+impl<P> From<SharedClient<P, runtime_legacy::Event>> for EventTypedClient<P>
+where
+    P: Pair,
+    MultiSignature: From<P::Signature>,
+{
+    fn from(sc: SharedClient<P, runtime_legacy::Event>) -> Self {
+        EventTypedClient::Legacy(sc)
     }
 }

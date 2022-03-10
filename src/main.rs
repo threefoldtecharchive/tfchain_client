@@ -123,7 +123,10 @@ fn main() {
 
     let websocket = matches.value_of("websocket").unwrap();
     let key: (sp_core::sr25519::Pair, _) = Pair::generate();
-    let mut client = tfchain_client::Client::new(String::from(websocket), Some(key.0));
+    let mut client = tfchain_client::Client::<_, runtime_legacy::Event>::new(
+        String::from(websocket),
+        Some(key.0),
+    );
 
     // if mnemonic provided, load client with words
     if let Some(mnemonic) = matches.values_of("mnemonic") {
@@ -218,7 +221,10 @@ fn main() {
                     Some(block_hash) => {
                         let block = client.get_block_by_hash(block_hash).unwrap().unwrap();
                         println!("Block:\n{:#?}", block);
-                        println!("Events:\n{:#?}", client.get_block_events(None).unwrap());
+                        println!(
+                            "Events:\n{:#?}",
+                            client.get_block_events(Some(block.header.hash())).unwrap()
+                        );
                     }
                     None => println!("Missing block hash"),
                 }

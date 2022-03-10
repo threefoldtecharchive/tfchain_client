@@ -1,12 +1,197 @@
 use chrono::prelude::*;
 use codec::{Decode, Encode};
-pub use pallet_tfgrid::types::{CertificationType, FarmingPolicy, Policy, Resources};
 pub use sp_application_crypto::ed25519;
 pub use sp_core::crypto::AccountId32;
 pub use sp_core::H256 as Hash;
 use std::fmt::{self, Display};
 pub use substrate_api_client::{AccountData, AccountInfo};
 pub use support::traits::BalanceStatus;
+
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Debug)]
+pub enum CertificationType {
+    Diy,
+    Certified,
+}
+
+impl Default for CertificationType {
+    fn default() -> Self {
+        CertificationType::Diy
+    }
+}
+
+impl From<pallet_tfgrid::types::CertificationType> for CertificationType {
+    fn from(ct: pallet_tfgrid::types::CertificationType) -> Self {
+        match ct {
+            pallet_tfgrid::types::CertificationType::Diy => CertificationType::Diy,
+            pallet_tfgrid::types::CertificationType::Certified => CertificationType::Certified,
+        }
+    }
+}
+
+impl From<pallet_tfgrid_legacy::types::CertificationType> for CertificationType {
+    fn from(ct: pallet_tfgrid_legacy::types::CertificationType) -> Self {
+        match ct {
+            pallet_tfgrid_legacy::types::CertificationType::Diy => CertificationType::Diy,
+            pallet_tfgrid_legacy::types::CertificationType::Certified => {
+                CertificationType::Certified
+            }
+        }
+    }
+}
+
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug)]
+pub struct FarmingPolicy {
+    pub version: u32,
+    pub id: u32,
+    pub name: String,
+    pub cu: u32,
+    pub su: u32,
+    pub nu: u32,
+    pub ipv4: u32,
+    pub timestamp: i64,
+    pub certification_type: CertificationType,
+}
+
+impl From<pallet_tfgrid::types::FarmingPolicy> for FarmingPolicy {
+    fn from(fp: pallet_tfgrid::types::FarmingPolicy) -> Self {
+        let pallet_tfgrid::types::FarmingPolicy {
+            version,
+            id,
+            name,
+            cu,
+            su,
+            nu,
+            ipv4,
+            timestamp,
+            certification_type,
+        } = fp;
+        Self {
+            version,
+            id,
+            name: String::from_utf8_lossy(&name).into(),
+            cu,
+            su,
+            nu,
+            ipv4,
+            timestamp: timestamp as i64,
+            certification_type: certification_type.into(),
+        }
+    }
+}
+
+impl From<pallet_tfgrid_legacy::types::FarmingPolicy> for FarmingPolicy {
+    fn from(fp: pallet_tfgrid_legacy::types::FarmingPolicy) -> Self {
+        let pallet_tfgrid_legacy::types::FarmingPolicy {
+            version,
+            id,
+            name,
+            cu,
+            su,
+            nu,
+            ipv4,
+            timestamp,
+            certification_type,
+        } = fp;
+        Self {
+            version,
+            id,
+            name: String::from_utf8_lossy(&name).into(),
+            cu,
+            su,
+            nu,
+            ipv4,
+            timestamp: timestamp as i64,
+            certification_type: certification_type.into(),
+        }
+    }
+}
+
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug)]
+pub struct Policy {
+    pub value: u32,
+    pub unit: Unit,
+}
+
+impl From<pallet_tfgrid::types::Policy> for Policy {
+    fn from(p: pallet_tfgrid::types::Policy) -> Self {
+        let pallet_tfgrid::types::Policy { value, unit } = p;
+        Self {
+            value,
+            unit: unit.into(),
+        }
+    }
+}
+
+impl From<pallet_tfgrid_legacy::types::Policy> for Policy {
+    fn from(p: pallet_tfgrid_legacy::types::Policy) -> Self {
+        let pallet_tfgrid_legacy::types::Policy { value, unit } = p;
+        Self {
+            value,
+            unit: unit.into(),
+        }
+    }
+}
+
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Debug)]
+pub enum Unit {
+    Bytes,
+    Kilobytes,
+    Megabytes,
+    Gigabytes,
+    Terrabytes,
+}
+
+impl Default for Unit {
+    fn default() -> Unit {
+        Unit::Gigabytes
+    }
+}
+
+impl From<pallet_tfgrid::types::Unit> for Unit {
+    fn from(u: pallet_tfgrid::types::Unit) -> Self {
+        match u {
+            pallet_tfgrid::types::Unit::Bytes => Unit::Bytes,
+            pallet_tfgrid::types::Unit::Kilobytes => Unit::Kilobytes,
+            pallet_tfgrid::types::Unit::Megabytes => Unit::Megabytes,
+            pallet_tfgrid::types::Unit::Gigabytes => Unit::Gigabytes,
+            pallet_tfgrid::types::Unit::Terrabytes => Unit::Terrabytes,
+        }
+    }
+}
+
+impl From<pallet_tfgrid_legacy::types::Unit> for Unit {
+    fn from(u: pallet_tfgrid_legacy::types::Unit) -> Self {
+        match u {
+            pallet_tfgrid_legacy::types::Unit::Bytes => Unit::Bytes,
+            pallet_tfgrid_legacy::types::Unit::Kilobytes => Unit::Kilobytes,
+            pallet_tfgrid_legacy::types::Unit::Megabytes => Unit::Megabytes,
+            pallet_tfgrid_legacy::types::Unit::Gigabytes => Unit::Gigabytes,
+            pallet_tfgrid_legacy::types::Unit::Terrabytes => Unit::Terrabytes,
+        }
+    }
+}
+
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug)]
+pub struct Resources {
+    pub hru: u64,
+    pub sru: u64,
+    pub cru: u64,
+    pub mru: u64,
+}
+
+impl From<pallet_tfgrid::types::Resources> for Resources {
+    fn from(r: pallet_tfgrid::types::Resources) -> Self {
+        let pallet_tfgrid::types::Resources { hru, sru, cru, mru } = r;
+        Self { hru, sru, cru, mru }
+    }
+}
+
+impl From<pallet_tfgrid_legacy::types::Resources> for Resources {
+    fn from(r: pallet_tfgrid_legacy::types::Resources) -> Self {
+        let pallet_tfgrid_legacy::types::Resources { hru, sru, cru, mru } = r;
+        Self { hru, sru, cru, mru }
+    }
+}
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug)]
 pub struct PricingPolicy {
@@ -42,12 +227,43 @@ impl From<pallet_tfgrid::types::PricingPolicy<AccountId32>> for PricingPolicy {
             version,
             id,
             name,
+            su: su.into(),
+            cu: cu.into(),
+            nu: nu.into(),
+            ipu: ipu.into(),
+            unique_name: unique_name.into(),
+            domain_name: domain_name.into(),
+            foundation_account,
+            certified_sales_account,
+        }
+    }
+}
+
+impl From<pallet_tfgrid_legacy::types::PricingPolicy<AccountId32>> for PricingPolicy {
+    fn from(pp: pallet_tfgrid_legacy::types::PricingPolicy<AccountId32>) -> Self {
+        let pallet_tfgrid_legacy::types::PricingPolicy::<AccountId32> {
+            version,
+            id,
+            name,
             su,
             cu,
             nu,
             ipu,
             unique_name,
             domain_name,
+            foundation_account,
+            certified_sales_account,
+        } = pp;
+        Self {
+            version,
+            id,
+            name,
+            su: su.into(),
+            cu: cu.into(),
+            nu: nu.into(),
+            ipu: ipu.into(),
+            unique_name: unique_name.into(),
+            domain_name: domain_name.into(),
             foundation_account,
             certified_sales_account,
         }
@@ -109,6 +325,25 @@ impl From<pallet_tfgrid::types::Twin<AccountId32>> for Twin {
     }
 }
 
+impl From<pallet_tfgrid_legacy::types::Twin<AccountId32>> for Twin {
+    fn from(t: pallet_tfgrid_legacy::types::Twin<AccountId32>) -> Self {
+        let pallet_tfgrid_legacy::types::Twin::<AccountId32> {
+            version,
+            id,
+            account_id,
+            ip,
+            entities,
+        } = t;
+        Self {
+            version,
+            id,
+            account_id,
+            ip: String::from_utf8_lossy(&ip).into(),
+            entities: entities.into_iter().map(EntityProof::from).collect(),
+        }
+    }
+}
+
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Debug, Encode, Decode, Default)]
 pub struct Entity {
     pub version: u32,
@@ -140,6 +375,27 @@ impl From<pallet_tfgrid::types::Entity<AccountId32>> for Entity {
     }
 }
 
+impl From<pallet_tfgrid_legacy::types::Entity<AccountId32>> for Entity {
+    fn from(e: pallet_tfgrid_legacy::types::Entity<AccountId32>) -> Self {
+        let pallet_tfgrid_legacy::types::Entity::<AccountId32> {
+            version,
+            id,
+            name,
+            account_id,
+            country,
+            city,
+        } = e;
+        Self {
+            version,
+            id,
+            name,
+            account_id,
+            country,
+            city,
+        }
+    }
+}
+
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug)]
 pub struct EntityProof {
     pub entity_id: u32,
@@ -149,6 +405,19 @@ pub struct EntityProof {
 impl From<pallet_tfgrid::types::EntityProof> for EntityProof {
     fn from(ep: pallet_tfgrid::types::EntityProof) -> Self {
         let pallet_tfgrid::types::EntityProof {
+            entity_id,
+            signature,
+        } = ep;
+        Self {
+            entity_id,
+            signature,
+        }
+    }
+}
+
+impl From<pallet_tfgrid_legacy::types::EntityProof> for EntityProof {
+    fn from(ep: pallet_tfgrid_legacy::types::EntityProof) -> Self {
+        let pallet_tfgrid_legacy::types::EntityProof {
             entity_id,
             signature,
         } = ep;
@@ -187,7 +456,30 @@ impl From<pallet_tfgrid::types::Farm> for Farm {
             name: String::from_utf8_lossy(&name).into(),
             twin_id,
             pricing_policy_id,
+            certification_type: certification_type.into(),
+            public_ips: public_ips.into_iter().map(PublicIP::from).collect(),
+        }
+    }
+}
+
+impl From<pallet_tfgrid_legacy::types::Farm> for Farm {
+    fn from(f: pallet_tfgrid_legacy::types::Farm) -> Self {
+        let pallet_tfgrid_legacy::types::Farm {
+            version,
+            id,
+            name,
+            twin_id,
+            pricing_policy_id,
             certification_type,
+            public_ips,
+        } = f;
+        Self {
+            version,
+            id,
+            name: String::from_utf8_lossy(&name).into(),
+            twin_id,
+            pricing_policy_id,
+            certification_type: certification_type.into(),
             public_ips: public_ips.into_iter().map(PublicIP::from).collect(),
         }
     }
@@ -203,6 +495,21 @@ pub struct PublicIP {
 impl From<pallet_tfgrid::types::PublicIP> for PublicIP {
     fn from(pip: pallet_tfgrid::types::PublicIP) -> Self {
         let pallet_tfgrid::types::PublicIP {
+            ip,
+            gateway,
+            contract_id,
+        } = pip;
+        Self {
+            ip: String::from_utf8_lossy(&ip).into(),
+            gateway: String::from_utf8_lossy(&gateway).into(),
+            contract_id,
+        }
+    }
+}
+
+impl From<pallet_tfgrid_legacy::types::PublicIP> for PublicIP {
+    fn from(pip: pallet_tfgrid_legacy::types::PublicIP) -> Self {
+        let pallet_tfgrid_legacy::types::PublicIP {
             ip,
             gateway,
             contract_id,
@@ -261,7 +568,7 @@ impl From<pallet_tfgrid::types::Node> for Node {
             id,
             farm_id,
             twin_id,
-            resources,
+            resources: resources.into(),
             location: location.into(),
             country: String::from_utf8_lossy(&country).into(),
             city: String::from_utf8_lossy(&city).into(),
@@ -269,10 +576,48 @@ impl From<pallet_tfgrid::types::Node> for Node {
             created,
             farming_policy_id,
             interfaces: interfaces.into_iter().map(Interface::from).collect(),
-            certification_type,
+            certification_type: certification_type.into(),
             secure_boot,
             virtualized,
             serial_number: String::from_utf8_lossy(&serial_number).into(),
+        }
+    }
+}
+
+impl From<pallet_tfgrid_legacy::types::Node> for Node {
+    fn from(n: pallet_tfgrid_legacy::types::Node) -> Self {
+        let pallet_tfgrid_legacy::types::Node {
+            version,
+            id,
+            farm_id,
+            twin_id,
+            resources,
+            location,
+            country,
+            city,
+            public_config,
+            created,
+            farming_policy_id,
+            interfaces,
+            certification_type,
+        } = n;
+        Self {
+            version,
+            id,
+            farm_id,
+            twin_id,
+            resources: resources.into(),
+            location: location.into(),
+            country: String::from_utf8_lossy(&country).into(),
+            city: String::from_utf8_lossy(&city).into(),
+            public_config: public_config.map(PublicConfig::from),
+            created,
+            farming_policy_id,
+            interfaces: interfaces.into_iter().map(Interface::from).collect(),
+            certification_type: certification_type.into(),
+            secure_boot: false,
+            virtualized: false,
+            serial_number: String::from(""),
         }
     }
 }
@@ -286,6 +631,19 @@ pub struct Location {
 impl From<pallet_tfgrid::types::Location> for Location {
     fn from(l: pallet_tfgrid::types::Location) -> Self {
         let pallet_tfgrid::types::Location {
+            longitude,
+            latitude,
+        } = l;
+        Self {
+            longitude: String::from_utf8_lossy(&longitude).into(),
+            latitude: String::from_utf8_lossy(&latitude).into(),
+        }
+    }
+}
+
+impl From<pallet_tfgrid_legacy::types::Location> for Location {
+    fn from(l: pallet_tfgrid_legacy::types::Location) -> Self {
+        let pallet_tfgrid_legacy::types::Location {
             longitude,
             latitude,
         } = l;
@@ -317,6 +675,20 @@ impl From<pallet_tfgrid::types::Interface> for Interface {
     }
 }
 
+impl From<pallet_tfgrid_legacy::types::Interface> for Interface {
+    fn from(iface: pallet_tfgrid_legacy::types::Interface) -> Self {
+        let pallet_tfgrid_legacy::types::Interface { name, mac, ips } = iface;
+        Self {
+            name: String::from_utf8_lossy(&name).into(),
+            mac: String::from_utf8_lossy(&mac).into(),
+            ips: ips
+                .into_iter()
+                .map(|ip| String::from_utf8_lossy(&ip).into())
+                .collect(),
+        }
+    }
+}
+
 pub type IP = String;
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug)]
@@ -331,6 +703,25 @@ pub struct PublicConfig {
 impl From<pallet_tfgrid::types::PublicConfig> for PublicConfig {
     fn from(pc: pallet_tfgrid::types::PublicConfig) -> Self {
         let pallet_tfgrid::types::PublicConfig {
+            ipv4,
+            ipv6,
+            gw4,
+            gw6,
+            domain,
+        } = pc;
+        Self {
+            ipv4: String::from_utf8_lossy(&ipv4).into(),
+            ipv6: String::from_utf8_lossy(&ipv6).into(),
+            gw4: String::from_utf8_lossy(&gw4).into(),
+            gw6: String::from_utf8_lossy(&gw6).into(),
+            domain: String::from_utf8_lossy(&domain).into(),
+        }
+    }
+}
+
+impl From<pallet_tfgrid_legacy::types::PublicConfig> for PublicConfig {
+    fn from(pc: pallet_tfgrid_legacy::types::PublicConfig) -> Self {
+        let pallet_tfgrid_legacy::types::PublicConfig {
             ipv4,
             ipv6,
             gw4,
@@ -387,6 +778,18 @@ impl From<pallet_smart_contract::types::DiscountLevel> for DiscountLevel {
     }
 }
 
+impl From<pallet_smart_contract_legacy::types::DiscountLevel> for DiscountLevel {
+    fn from(dl: pallet_smart_contract_legacy::types::DiscountLevel) -> Self {
+        match dl {
+            pallet_smart_contract_legacy::types::DiscountLevel::None => DiscountLevel::None,
+            pallet_smart_contract_legacy::types::DiscountLevel::Default => DiscountLevel::Default,
+            pallet_smart_contract_legacy::types::DiscountLevel::Bronze => DiscountLevel::Bronze,
+            pallet_smart_contract_legacy::types::DiscountLevel::Silver => DiscountLevel::Silver,
+            pallet_smart_contract_legacy::types::DiscountLevel::Gold => DiscountLevel::Gold,
+        }
+    }
+}
+
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug)]
 pub struct Consumption {
     pub contract_id: u64,
@@ -401,6 +804,29 @@ pub struct Consumption {
 impl From<pallet_smart_contract::types::Consumption> for Consumption {
     fn from(c: pallet_smart_contract::types::Consumption) -> Self {
         let pallet_smart_contract::types::Consumption {
+            contract_id,
+            timestamp,
+            cru,
+            sru,
+            hru,
+            mru,
+            nru,
+        } = c;
+        Self {
+            contract_id,
+            timestamp,
+            cru,
+            sru,
+            hru,
+            mru,
+            nru,
+        }
+    }
+}
+
+impl From<pallet_smart_contract_legacy::types::Consumption> for Consumption {
+    fn from(c: pallet_smart_contract_legacy::types::Consumption) -> Self {
+        let pallet_smart_contract_legacy::types::Consumption {
             contract_id,
             timestamp,
             cru,
@@ -446,6 +872,23 @@ impl From<pallet_smart_contract::types::ContractBill> for ContractBill {
     }
 }
 
+impl From<pallet_smart_contract_legacy::types::ContractBill> for ContractBill {
+    fn from(cb: pallet_smart_contract_legacy::types::ContractBill) -> Self {
+        let pallet_smart_contract_legacy::types::ContractBill {
+            contract_id,
+            timestamp,
+            discount_level,
+            amount_billed,
+        } = cb;
+        Self {
+            contract_id,
+            timestamp,
+            discount_level: discount_level.into(),
+            amount_billed,
+        }
+    }
+}
+
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug)]
 pub struct Contract {
     pub version: u32,
@@ -458,6 +901,25 @@ pub struct Contract {
 impl From<pallet_smart_contract::types::Contract> for Contract {
     fn from(c: pallet_smart_contract::types::Contract) -> Self {
         let pallet_smart_contract::types::Contract {
+            version,
+            state,
+            contract_id,
+            twin_id,
+            contract_type,
+        } = c;
+        Self {
+            version,
+            state: state.into(),
+            contract_id,
+            twin_id,
+            contract_type: contract_type.into(),
+        }
+    }
+}
+
+impl From<pallet_smart_contract_legacy::types::Contract> for Contract {
+    fn from(c: pallet_smart_contract_legacy::types::Contract) -> Self {
+        let pallet_smart_contract_legacy::types::Contract {
             version,
             state,
             contract_id,
@@ -506,6 +968,25 @@ impl From<pallet_smart_contract::types::NodeContract> for NodeContract {
     }
 }
 
+impl From<pallet_smart_contract_legacy::types::NodeContract> for NodeContract {
+    fn from(nc: pallet_smart_contract_legacy::types::NodeContract) -> Self {
+        let pallet_smart_contract_legacy::types::NodeContract {
+            node_id,
+            deployment_data,
+            deployment_hash,
+            public_ips,
+            public_ips_list,
+        } = nc;
+        Self {
+            node_id,
+            deployment_data,
+            deployment_hash,
+            public_ips,
+            public_ips_list: public_ips_list.into_iter().map(PublicIP::from).collect(),
+        }
+    }
+}
+
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug)]
 pub struct NameContract {
     pub name: String,
@@ -514,6 +995,15 @@ pub struct NameContract {
 impl From<pallet_smart_contract::types::NameContract> for NameContract {
     fn from(nc: pallet_smart_contract::types::NameContract) -> Self {
         let pallet_smart_contract::types::NameContract { name } = nc;
+        Self {
+            name: String::from_utf8_lossy(&name).into(),
+        }
+    }
+}
+
+impl From<pallet_smart_contract_legacy::types::NameContract> for NameContract {
+    fn from(nc: pallet_smart_contract_legacy::types::NameContract) -> Self {
+        let pallet_smart_contract_legacy::types::NameContract { name } = nc;
         Self {
             name: String::from_utf8_lossy(&name).into(),
         }
@@ -545,6 +1035,19 @@ impl From<pallet_smart_contract::types::ContractData> for ContractData {
     }
 }
 
+impl From<pallet_smart_contract_legacy::types::ContractData> for ContractData {
+    fn from(cd: pallet_smart_contract_legacy::types::ContractData) -> Self {
+        match cd {
+            pallet_smart_contract_legacy::types::ContractData::NodeContract(node_contract) => {
+                ContractData::NodeContract(node_contract.into())
+            }
+            pallet_smart_contract_legacy::types::ContractData::NameContract(name_contract) => {
+                ContractData::NameContract(name_contract.into())
+            }
+        }
+    }
+}
+
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Debug)]
 pub enum ContractState {
     Created,
@@ -556,6 +1059,17 @@ impl From<pallet_smart_contract::types::ContractState> for ContractState {
         match cs {
             pallet_smart_contract::types::ContractState::Created => ContractState::Created,
             pallet_smart_contract::types::ContractState::Deleted(cause) => {
+                ContractState::Deleted(cause.into())
+            }
+        }
+    }
+}
+
+impl From<pallet_smart_contract_legacy::types::ContractState> for ContractState {
+    fn from(cs: pallet_smart_contract_legacy::types::ContractState) -> Self {
+        match cs {
+            pallet_smart_contract_legacy::types::ContractState::Created => ContractState::Created,
+            pallet_smart_contract_legacy::types::ContractState::Deleted(cause) => {
                 ContractState::Deleted(cause.into())
             }
         }
@@ -577,6 +1091,15 @@ impl From<pallet_smart_contract::types::Cause> for Cause {
     }
 }
 
+impl From<pallet_smart_contract_legacy::types::Cause> for Cause {
+    fn from(c: pallet_smart_contract_legacy::types::Cause) -> Self {
+        match c {
+            pallet_smart_contract_legacy::types::Cause::CanceledByUser => Cause::CanceledByUser,
+            pallet_smart_contract_legacy::types::Cause::OutOfFunds => Cause::OutOfFunds,
+        }
+    }
+}
+
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug)]
 pub struct CertificationCodes {
     pub version: u32,
@@ -589,6 +1112,25 @@ pub struct CertificationCodes {
 impl From<pallet_tfgrid::types::CertificationCodes> for CertificationCodes {
     fn from(cc: pallet_tfgrid::types::CertificationCodes) -> Self {
         let pallet_tfgrid::types::CertificationCodes {
+            version,
+            id,
+            name,
+            description,
+            certification_code_type,
+        } = cc;
+        Self {
+            version,
+            id,
+            name,
+            description,
+            certification_code_type: certification_code_type.into(),
+        }
+    }
+}
+
+impl From<pallet_tfgrid_legacy::types::CertificationCodes> for CertificationCodes {
+    fn from(cc: pallet_tfgrid_legacy::types::CertificationCodes) -> Self {
+        let pallet_tfgrid_legacy::types::CertificationCodes {
             version,
             id,
             name,
@@ -622,6 +1164,17 @@ impl From<pallet_tfgrid::types::CertificationCodeType> for CertificationCodeType
         match cct {
             pallet_tfgrid::types::CertificationCodeType::Farm => CertificationCodeType::Farm,
             pallet_tfgrid::types::CertificationCodeType::Entity => CertificationCodeType::Entity,
+        }
+    }
+}
+
+impl From<pallet_tfgrid_legacy::types::CertificationCodeType> for CertificationCodeType {
+    fn from(cct: pallet_tfgrid_legacy::types::CertificationCodeType) -> Self {
+        match cct {
+            pallet_tfgrid_legacy::types::CertificationCodeType::Farm => CertificationCodeType::Farm,
+            pallet_tfgrid_legacy::types::CertificationCodeType::Entity => {
+                CertificationCodeType::Entity
+            }
         }
     }
 }

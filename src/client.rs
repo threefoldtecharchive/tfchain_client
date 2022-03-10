@@ -19,58 +19,90 @@ const BLOCK_TIME_SECONDS: i64 = 6;
 
 pub type ApiResult<T> = Result<T, ApiClientError>;
 
-#[derive(Clone)]
-pub struct SharedClient<P>
+pub struct SharedClient<P, E>
 where
     P: Pair,
     MultiSignature: From<P::Signature>,
 {
-    inner: Arc<Client<P>>,
+    inner: Arc<Client<P, E>>,
 }
 
-impl<P> SharedClient<P>
+impl<P, E> SharedClient<P, E>
 where
     P: Pair,
     MultiSignature: From<P::Signature>,
 {
-    pub fn new(client: Client<P>) -> Self {
+    pub fn new(client: Client<P, E>) -> Self {
         Self {
             inner: Arc::new(client),
         }
     }
+
+    pub fn with_events<U>(self) -> SharedClient<P, U>
+    where
+        U: support::sp_runtime::traits::Member + support::Parameter,
+        TfchainEvent: From<U>,
+    {
+        // TODO: Improve this
+        SharedClient {
+            inner: Arc::new(Client {
+                inner: RawClient {
+                    api: self.inner.inner.api.clone(),
+                    _marker: std::marker::PhantomData,
+                },
+            }),
+        }
+    }
 }
 
-impl<P> std::ops::Deref for SharedClient<P>
+impl<P, E> Clone for SharedClient<P, E>
 where
     P: Pair,
     MultiSignature: From<P::Signature>,
 {
-    type Target = Client<P>;
+    fn clone(&self) -> Self {
+        Self {
+            inner: self.inner.clone(),
+        }
+    }
+}
+
+impl<P, E> std::ops::Deref for SharedClient<P, E>
+where
+    P: Pair,
+    MultiSignature: From<P::Signature>,
+{
+    type Target = Client<P, E>;
     fn deref(&self) -> &Self::Target {
         &self.inner
     }
 }
 
-pub struct Client<P>
+pub struct Client<P, E>
 where
     P: Pair,
     MultiSignature: From<P::Signature>,
 {
-    inner: RawClient<P>,
+    inner: RawClient<P, E>,
 }
 
-impl<P> Client<P>
+impl<P, E> Client<P, E>
 where
     P: Pair,
     MultiSignature: From<P::Signature>,
+    E: support::sp_runtime::traits::Member + support::Parameter,
+    TfchainEvent: From<E>,
 {
-    pub fn new(url: String, signer: Option<P>) -> Client<P> {
+    pub fn new(url: String, signer: Option<P>) -> Client<P, E> {
         let mut api = Api::new(url).unwrap();
         if let Some(signer) = signer {
             api = api.set_signer(signer);
         }
         Client {
-            inner: RawClient { api },
+            inner: RawClient {
+                api,
+                _marker: std::marker::PhantomData,
+            },
         }
     }
 
@@ -360,22 +392,28 @@ where
     }
 }
 
-pub struct RawClient<P>
+pub struct RawClient<P, E>
 where
     P: Pair,
     MultiSignature: From<P::Signature>,
 {
     pub api: Api<P>,
+    _marker: std::marker::PhantomData<E>,
 }
 
-impl<P> RawClient<P>
+impl<P, E> RawClient<P, E>
 where
     P: Pair,
     MultiSignature: From<P::Signature>,
+    E: support::Parameter + sp_runtime::traits::Member,
+    TfchainEvent: From<E>,
 {
-    pub fn new(url: String, signer: P) -> RawClient<P> {
+    pub fn new(url: String, signer: P) -> RawClient<P, E> {
         let api = Api::new(url).unwrap().set_signer(signer);
-        RawClient { api }
+        RawClient {
+            api,
+            _marker: std::marker::PhantomData,
+        }
     }
 
     pub fn create_twin(&self, ip: &str) -> ApiResult<Option<Hash>> {
@@ -434,8 +472,24 @@ where
     }
 
     pub fn get_node_by_id(&self, node_id: u32, block: Option<Hash>) -> ApiResult<Option<Node>> {
+        // Try to decode all known node types here.
+        let res = self.api.get_storage_map::<_, pallet_tfgrid::types::Node>(
+            "TfgridModule",
+            "Nodes",
+            node_id,
+            block,
+        );
+        if res.is_ok() {
+            return Ok(res.unwrap().map(Node::from));
+        }
         self.api
-            .get_storage_map("TfgridModule", "Nodes", node_id, block)
+            .get_storage_map::<_, pallet_tfgrid_legacy::types::Node>(
+                "TfgridModule",
+                "Nodes",
+                node_id,
+                block,
+            )
+            .map(|pr| pr.map(Node::from))
     }
 
     pub fn node_count(&self, block: Option<Hash>) -> ApiResult<u32> {
@@ -483,7 +537,7 @@ where
     }
 
     pub fn get_block_events(&self, block: Option<Hash>) -> ApiResult<Vec<TfchainEvent>> {
-        let events: Vec<system::EventRecord<runtime::Event, Hash>> = self
+        let events: Vec<system::EventRecord<E, Hash>> = self
             .api
             .get_storage_value("System", "Events", block)?
             .unwrap();
