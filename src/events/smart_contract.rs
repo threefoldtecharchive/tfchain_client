@@ -1,4 +1,4 @@
-use crate::types::{Balance, Consumption, Contract, ContractBill, PublicIP};
+use crate::types::{Balance, Consumption, Contract, ContractBill, PublicIP, Resources};
 use sp_core::crypto::AccountId32;
 
 #[derive(Debug)]
@@ -23,6 +23,11 @@ pub enum Event {
     ContractBilled(ContractBill),
     /// Tokens burned for contract payment \[Contract id, amount\]
     TokensBurned(u64, Balance),
+    /// Update the resources used by a contract [\Contract id, resources\]
+    UpdatedUsedResources(u64, Resources),
+    /// Nru consumption reported by a node for contract [\Contract id, timestamp, window duration,
+    /// NRU\]
+    NruConsumption(u64, u64, u64, u64),
 }
 
 impl From<pallet_smart_contract::Event<runtime::Runtime>> for Event {
@@ -60,6 +65,12 @@ impl From<pallet_smart_contract::Event<runtime::Runtime>> for Event {
             }
             pallet_smart_contract::Event::<runtime::Runtime>::TokensBurned(contract_id, amount) => {
                 Event::TokensBurned(contract_id, (amount as u64).into())
+            }
+            pallet_smart_contract::Event::<runtime::Runtime>::UpdatedUsedResources(resources) => {
+                Event::UpdatedUsedResources(resources.contract_id, resources.used.into())
+            }
+            pallet_smart_contract::Event::<runtime::Runtime>::NruConsumptionReportReceived(n) => {
+                Event::NruConsumption(n.contract_id, n.timestamp, n.window, n.nru)
             }
         }
     }
