@@ -29,6 +29,9 @@ pub enum Event {
     CertificationCodeStored(CertificationCodes),
     FarmingPolicyStored(FarmingPolicy),
     FarmPayoutV2AddressRegistered(u32, Vec<u8>),
+
+    /// Farm has been marked as dedicated \[farm id\]
+    FarmMarkedAsDedicated(u32),
 }
 
 impl From<pallet_tfgrid::Event<runtime::Runtime>> for Event {
@@ -87,6 +90,9 @@ impl From<pallet_tfgrid::Event<runtime::Runtime>> for Event {
                 id,
                 address,
             ) => Event::FarmPayoutV2AddressRegistered(id, address),
+            pallet_tfgrid::Event::<runtime::Runtime>::FarmMarkedAsDedicated(farm_id) => {
+                Event::FarmMarkedAsDedicated(farm_id)
+            }
         }
     }
 }

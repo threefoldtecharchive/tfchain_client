@@ -23,11 +23,13 @@ pub enum Event {
     ContractBilled(ContractBill),
     /// Tokens burned for contract payment \[Contract id, amount\]
     TokensBurned(u64, Balance),
-    /// Update the resources used by a contract [\Contract id, resources\]
+    /// Update the resources used by a contract \[Contract id, resources\]
     UpdatedUsedResources(u64, Resources),
-    /// Nru consumption reported by a node for contract [\Contract id, timestamp, window duration,
+    /// Nru consumption reported by a node for contract \[Contract id, timestamp, window duration,
     /// NRU\]
     NruConsumption(u64, u64, u64, u64),
+    /// A rent contract was cancelled \[contract id\]
+    RentContractCancelled(u64),
 }
 
 impl From<pallet_smart_contract::Event<runtime::Runtime>> for Event {
@@ -71,6 +73,9 @@ impl From<pallet_smart_contract::Event<runtime::Runtime>> for Event {
             }
             pallet_smart_contract::Event::<runtime::Runtime>::NruConsumptionReportReceived(n) => {
                 Event::NruConsumption(n.contract_id, n.timestamp, n.window, n.nru)
+            }
+            pallet_smart_contract::Event::<runtime::Runtime>::RentContractCanceled(contract_id) => {
+                Event::RentContractCancelled(contract_id)
             }
         }
     }

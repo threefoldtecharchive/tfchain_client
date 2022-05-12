@@ -206,6 +206,7 @@ pub struct PricingPolicy {
     pub domain_name: Policy,
     pub foundation_account: AccountId32,
     pub certified_sales_account: AccountId32,
+    pub discount_for_dedication_nodes: u8,
 }
 
 impl From<pallet_tfgrid::types::PricingPolicy<AccountId32>> for PricingPolicy {
@@ -222,6 +223,7 @@ impl From<pallet_tfgrid::types::PricingPolicy<AccountId32>> for PricingPolicy {
             domain_name,
             foundation_account,
             certified_sales_account,
+            discount_for_dedication_nodes,
         } = pp;
         Self {
             version,
@@ -235,6 +237,7 @@ impl From<pallet_tfgrid::types::PricingPolicy<AccountId32>> for PricingPolicy {
             domain_name: domain_name.into(),
             foundation_account,
             certified_sales_account,
+            discount_for_dedication_nodes,
         }
     }
 }
@@ -266,6 +269,7 @@ impl From<pallet_tfgrid_legacy::types::PricingPolicy<AccountId32>> for PricingPo
             domain_name: domain_name.into(),
             foundation_account,
             certified_sales_account,
+            discount_for_dedication_nodes: 0,
         }
     }
 }
@@ -437,6 +441,7 @@ pub struct Farm {
     pub pricing_policy_id: u32,
     pub certification_type: CertificationType,
     pub public_ips: Vec<PublicIP>,
+    pub dedicated_farm: bool,
 }
 
 impl From<pallet_tfgrid::types::Farm> for Farm {
@@ -449,6 +454,7 @@ impl From<pallet_tfgrid::types::Farm> for Farm {
             pricing_policy_id,
             certification_type,
             public_ips,
+            dedicated_farm,
         } = f;
         Self {
             version,
@@ -458,6 +464,7 @@ impl From<pallet_tfgrid::types::Farm> for Farm {
             pricing_policy_id,
             certification_type: certification_type.into(),
             public_ips: public_ips.into_iter().map(PublicIP::from).collect(),
+            dedicated_farm,
         }
     }
 }
@@ -481,6 +488,7 @@ impl From<pallet_tfgrid_legacy::types::Farm> for Farm {
             pricing_policy_id,
             certification_type: certification_type.into(),
             public_ips: public_ips.into_iter().map(PublicIP::from).collect(),
+            dedicated_farm: false,
         }
     }
 }
@@ -600,6 +608,9 @@ impl From<pallet_tfgrid_legacy::types::Node> for Node {
             farming_policy_id,
             interfaces,
             certification_type,
+            secure_boot,
+            virtualized,
+            serial_number,
         } = n;
         Self {
             version,
@@ -615,9 +626,9 @@ impl From<pallet_tfgrid_legacy::types::Node> for Node {
             farming_policy_id,
             interfaces: interfaces.into_iter().map(Interface::from).collect(),
             certification_type: certification_type.into(),
-            secure_boot: false,
-            virtualized: false,
-            serial_number: String::from(""),
+            secure_boot,
+            virtualized,
+            serial_number: String::from_utf8_lossy(&serial_number).to_string(),
         }
     }
 }
@@ -1010,10 +1021,23 @@ impl From<pallet_smart_contract_legacy::types::NameContract> for NameContract {
     }
 }
 
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug)]
+pub struct RentContract {
+    pub node_id: u32,
+}
+
+impl From<pallet_smart_contract::types::RentContract> for RentContract {
+    fn from(nc: pallet_smart_contract::types::RentContract) -> Self {
+        let pallet_smart_contract::types::RentContract { node_id } = nc;
+        Self { node_id }
+    }
+}
+
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Debug)]
 pub enum ContractData {
     NodeContract(NodeContract),
     NameContract(NameContract),
+    RentContract(RentContract),
 }
 
 impl Default for ContractData {
@@ -1030,6 +1054,9 @@ impl From<pallet_smart_contract::types::ContractData> for ContractData {
             }
             pallet_smart_contract::types::ContractData::NameContract(name_contract) => {
                 ContractData::NameContract(name_contract.into())
+            }
+            pallet_smart_contract::types::ContractData::RentContract(rent_contract) => {
+                ContractData::RentContract(rent_contract.into())
             }
         }
     }
@@ -1325,6 +1352,9 @@ impl Display for ContractData {
                     writeln!(f, "Gateway: {}", ip.gateway)?;
                 }
                 write!(f, "Number of public ips: {}", node_contract.public_ips)
+            }
+            ContractData::RentContract(rent_contract) => {
+                writeln!(f, "Rented node id: {}", rent_contract.node_id)
             }
         }
     }

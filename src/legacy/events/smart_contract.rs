@@ -36,6 +36,12 @@ impl From<pallet_smart_contract_legacy::Event<runtime_legacy::Runtime>> for Smar
             pallet_smart_contract_legacy::Event::<runtime_legacy::Runtime>::TokensBurned(contract_id, amount) => {
                 SmartContractEvent::TokensBurned(contract_id, (amount as u64).into())
             }
+            pallet_smart_contract_legacy::Event::<runtime_legacy::Runtime>::UpdatedUsedResources(resources) => {
+                SmartContractEvent::UpdatedUsedResources(resources.contract_id, resources.used.into())
+            }
+            pallet_smart_contract_legacy::Event::<runtime_legacy::Runtime>::NruConsumptionReportReceived(n) => {
+                SmartContractEvent::NruConsumption(n.contract_id, n.timestamp, n.window, n.nru)
+            }
         }
     }
 }
