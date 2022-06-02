@@ -49,7 +49,7 @@ where
                 }
             }
             Network::Test => {
-                if height < 2_840_410 {
+                if height < 2_626_371 {
                     client.into().as_legacy()
                 } else {
                     client.into().as_current()
