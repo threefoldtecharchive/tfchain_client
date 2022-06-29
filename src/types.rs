@@ -179,6 +179,12 @@ pub struct Resources {
     pub mru: u64,
 }
 
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug)]
+pub struct ContractResources {
+    pub contract_id: u64,
+    pub used: Resources,
+}
+
 impl From<pallet_tfgrid::types::Resources> for Resources {
     fn from(r: pallet_tfgrid::types::Resources) -> Self {
         let pallet_tfgrid::types::Resources { hru, sru, cru, mru } = r;

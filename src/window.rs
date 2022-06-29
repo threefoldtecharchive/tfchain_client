@@ -2,7 +2,7 @@
 
 use crate::client::SharedClient;
 use crate::events;
-use crate::types::{BlockNumber, Contract, ContractState, Farm, Hash, Node};
+use crate::types::{BlockNumber, Contract, ContractState, Farm, Hash, Node, Resources};
 use chrono::prelude::*;
 use sp_core::crypto::Pair;
 use std::fmt;
@@ -295,7 +295,7 @@ where
     P: Pair,
     MultiSignature: From<P::Signature>,
 {
-    type Item = WindowResult<Contract>;
+    type Item = WindowResult<(Contract, Resources)>;
 
     fn next(&mut self) -> Option<Self::Item> {
         loop {
@@ -311,15 +311,15 @@ where
                 .map_err(WindowError::from)
             {
                 Ok(maybe_contract) => match maybe_contract {
-                    Some(contract) => {
+                    Some((contract, cr)) => {
                         if self.live {
                             if matches!(contract.state, ContractState::Created) {
-                                Some(Ok(contract))
+                                Some(Ok((contract, cr)))
                             } else {
                                 continue;
                             }
                         } else {
-                            Some(Ok(contract))
+                            Some(Ok((contract, cr)))
                         }
                     }
                     None => continue,
@@ -450,10 +450,28 @@ where
         &self,
         contract_id: u64,
         block: Option<Hash>,
-    ) -> crate::client::ApiResult<Option<Contract>> {
+    ) -> crate::client::ApiResult<Option<(Contract, Resources)>> {
         match self {
-            EventTypedClient::Current(ref sc) => sc.get_contract_by_id(contract_id, block),
-            EventTypedClient::Legacy(ref sc) => sc.get_contract_by_id(contract_id, block),
+            EventTypedClient::Current(ref sc) => {
+                match sc.get_contract_by_id(contract_id, block)? {
+                    None => Ok(None),
+                    Some(c) => Ok(Some((
+                        c,
+                        sc.get_contract_resources(contract_id, block)?
+                            .unwrap_or_default()
+                            .used,
+                    ))),
+                }
+            }
+            EventTypedClient::Legacy(ref sc) => match sc.get_contract_by_id(contract_id, block)? {
+                None => Ok(None),
+                Some(c) => Ok(Some((
+                    c,
+                    sc.get_contract_resources(contract_id, block)?
+                        .unwrap_or_default()
+                        .used,
+                ))),
+            },
         }
     }
 

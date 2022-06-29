@@ -2,6 +2,7 @@
 //! [Client], you likely want to look at the [window](crate::window) module.
 
 use crate::events::TfchainEvent;
+use crate::types::ContractResources;
 pub use crate::types::Hash;
 use crate::types::{AccountData, AccountInfo, BlockNumber, Contract, Farm, Node, Twin};
 use runtime::Block;
@@ -235,6 +236,23 @@ where
                 x => return x,
             }
             res = self.inner.get_contract_by_id(contract_id, block);
+        }
+
+        res
+    }
+
+    pub fn get_contract_resources(
+        &self,
+        contract_id: u64,
+        block: Option<Hash>,
+    ) -> ApiResult<Option<ContractResources>> {
+        let mut res = self.inner.get_contract_resources(contract_id, block);
+        for _ in 0..5 {
+            match res {
+                Err(ApiClientError::Disconnected(_)) => {}
+                x => return x,
+            }
+            res = self.inner.get_contract_resources(contract_id, block);
         }
 
         res
@@ -506,6 +524,19 @@ where
     ) -> ApiResult<Option<Contract>> {
         self.api
             .get_storage_map("SmartContractModule", "Contracts", contract_id, block)
+    }
+
+    pub fn get_contract_resources(
+        &self,
+        contract_id: u64,
+        block: Option<Hash>,
+    ) -> ApiResult<Option<ContractResources>> {
+        self.api.get_storage_map(
+            "SmartContractModule",
+            "NodeContractResources",
+            contract_id,
+            block,
+        )
     }
 
     pub fn contract_count(&self, block: Option<Hash>) -> ApiResult<u64> {
