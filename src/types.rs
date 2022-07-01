@@ -8,39 +8,39 @@ pub use substrate_api_client::{AccountData, AccountInfo};
 pub use support::traits::BalanceStatus;
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Debug)]
-pub enum CertificationType {
+pub enum NodeCertification {
     Diy,
     Certified,
 }
 
-impl Default for CertificationType {
+impl Default for NodeCertification {
     fn default() -> Self {
-        CertificationType::Diy
+        NodeCertification::Diy
     }
 }
 
-impl From<pallet_tfgrid::types::CertificationType> for CertificationType {
-    fn from(ct: pallet_tfgrid::types::CertificationType) -> Self {
+impl From<tfchain_support::types::NodeCertification> for NodeCertification {
+    fn from(ct: tfchain_support::types::NodeCertification) -> Self {
         match ct {
-            pallet_tfgrid::types::CertificationType::Diy => CertificationType::Diy,
-            pallet_tfgrid::types::CertificationType::Certified => CertificationType::Certified,
+            tfchain_support::types::NodeCertification::Diy => NodeCertification::Diy,
+            tfchain_support::types::NodeCertification::Certified => NodeCertification::Certified,
         }
     }
 }
 
-impl From<pallet_tfgrid_legacy::types::CertificationType> for CertificationType {
+impl From<pallet_tfgrid_legacy::types::CertificationType> for NodeCertification {
     fn from(ct: pallet_tfgrid_legacy::types::CertificationType) -> Self {
         match ct {
-            pallet_tfgrid_legacy::types::CertificationType::Diy => CertificationType::Diy,
+            pallet_tfgrid_legacy::types::CertificationType::Diy => NodeCertification::Diy,
             pallet_tfgrid_legacy::types::CertificationType::Certified => {
-                CertificationType::Certified
+                NodeCertification::Certified
             }
         }
     }
 }
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug)]
-pub struct FarmingPolicy {
+pub struct FarmingPolicy<BlockNumber> {
     pub version: u32,
     pub id: u32,
     pub name: String,
@@ -48,13 +48,21 @@ pub struct FarmingPolicy {
     pub su: u32,
     pub nu: u32,
     pub ipv4: u32,
-    pub timestamp: i64,
-    pub certification_type: CertificationType,
+    pub minimal_uptime: u16,
+    pub policy_created: BlockNumber,
+    pub policy_end: BlockNumber,
+    pub immutable: bool,
+    pub default: bool,
+    pub node_certification: NodeCertification,
+    pub farm_certification: FarmCertification,
 }
 
-impl From<pallet_tfgrid::types::FarmingPolicy> for FarmingPolicy {
-    fn from(fp: pallet_tfgrid::types::FarmingPolicy) -> Self {
+impl<BlockNumber> From<pallet_tfgrid::types::FarmingPolicy<BlockNumber>>
+    for FarmingPolicy<BlockNumber>
+{
+    fn from(fp: pallet_tfgrid::types::FarmingPolicy<BlockNumber>) -> Self {
         let pallet_tfgrid::types::FarmingPolicy {
+            // Minimal uptime in order to benefit from this uptime.
             version,
             id,
             name,
@@ -62,8 +70,13 @@ impl From<pallet_tfgrid::types::FarmingPolicy> for FarmingPolicy {
             su,
             nu,
             ipv4,
-            timestamp,
-            certification_type,
+            minimal_uptime,
+            policy_created,
+            policy_end,
+            immutable,
+            default,
+            node_certification,
+            farm_certification,
         } = fp;
         Self {
             version,
@@ -73,13 +86,18 @@ impl From<pallet_tfgrid::types::FarmingPolicy> for FarmingPolicy {
             su,
             nu,
             ipv4,
-            timestamp: timestamp as i64,
-            certification_type: certification_type.into(),
+            minimal_uptime,
+            policy_created,
+            policy_end,
+            immutable,
+            default,
+            node_certification: node_certification.into(),
+            farm_certification: farm_certification.into(),
         }
     }
 }
 
-impl From<pallet_tfgrid_legacy::types::FarmingPolicy> for FarmingPolicy {
+impl From<pallet_tfgrid_legacy::types::FarmingPolicy> for FarmingPolicy<BlockNumber> {
     fn from(fp: pallet_tfgrid_legacy::types::FarmingPolicy) -> Self {
         let pallet_tfgrid_legacy::types::FarmingPolicy {
             version,
@@ -100,8 +118,13 @@ impl From<pallet_tfgrid_legacy::types::FarmingPolicy> for FarmingPolicy {
             su,
             nu,
             ipv4,
-            timestamp: timestamp as i64,
-            certification_type: certification_type.into(),
+            minimal_uptime: 0,
+            policy_created: 0,
+            policy_end: 0,
+            immutable: false,
+            default: false,
+            node_certification: NodeCertification::Diy,
+            farm_certification: FarmCertification::NotCertified,
         }
     }
 }
@@ -185,9 +208,9 @@ pub struct ContractResources {
     pub used: Resources,
 }
 
-impl From<pallet_tfgrid::types::Resources> for Resources {
-    fn from(r: pallet_tfgrid::types::Resources) -> Self {
-        let pallet_tfgrid::types::Resources { hru, sru, cru, mru } = r;
+impl From<tfchain_support::types::Resources> for Resources {
+    fn from(r: tfchain_support::types::Resources) -> Self {
+        let tfchain_support::types::Resources { hru, sru, cru, mru } = r;
         Self { hru, sru, cru, mru }
     }
 }
@@ -262,6 +285,7 @@ impl From<pallet_tfgrid_legacy::types::PricingPolicy<AccountId32>> for PricingPo
             domain_name,
             foundation_account,
             certified_sales_account,
+            discount_for_dedication_nodes,
         } = pp;
         Self {
             version,
@@ -275,7 +299,7 @@ impl From<pallet_tfgrid_legacy::types::PricingPolicy<AccountId32>> for PricingPo
             domain_name: domain_name.into(),
             foundation_account,
             certified_sales_account,
-            discount_for_dedication_nodes: 0,
+            discount_for_dedication_nodes,
         }
     }
 }
@@ -445,22 +469,78 @@ pub struct Farm {
     pub name: String,
     pub twin_id: u32,
     pub pricing_policy_id: u32,
-    pub certification_type: CertificationType,
+    pub certification: FarmCertification,
     pub public_ips: Vec<PublicIP>,
     pub dedicated_farm: bool,
+    pub farming_policy_limits: Option<FarmingPolicyLimit>,
 }
 
-impl From<pallet_tfgrid::types::Farm> for Farm {
-    fn from(f: pallet_tfgrid::types::Farm) -> Self {
-        let pallet_tfgrid::types::Farm {
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Debug)]
+pub enum FarmCertification {
+    NotCertified,
+    Gold,
+}
+
+impl Default for FarmCertification {
+    fn default() -> Self {
+        FarmCertification::NotCertified
+    }
+}
+
+impl From<tfchain_support::types::FarmCertification> for FarmCertification {
+    fn from(fc: tfchain_support::types::FarmCertification) -> Self {
+        match fc {
+            tfchain_support::types::FarmCertification::NotCertified => {
+                FarmCertification::NotCertified
+            }
+            tfchain_support::types::FarmCertification::Gold => FarmCertification::Gold,
+        }
+    }
+}
+
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug)]
+pub struct FarmingPolicyLimit {
+    pub farming_policy_id: u32,
+    pub cu: Option<u64>,
+    pub su: Option<u64>,
+    pub end: Option<u64>,
+    pub node_count: Option<u32>,
+    pub node_certification: bool,
+}
+
+impl From<tfchain_support::types::FarmingPolicyLimit> for FarmingPolicyLimit {
+    fn from(fpl: tfchain_support::types::FarmingPolicyLimit) -> Self {
+        let tfchain_support::types::FarmingPolicyLimit {
+            farming_policy_id,
+            cu,
+            su,
+            end,
+            node_count,
+            node_certification,
+        } = fpl;
+        Self {
+            farming_policy_id,
+            cu,
+            su,
+            end,
+            node_count,
+            node_certification,
+        }
+    }
+}
+
+impl From<tfchain_support::types::Farm> for Farm {
+    fn from(f: tfchain_support::types::Farm) -> Self {
+        let tfchain_support::types::Farm {
             version,
             id,
             name,
             twin_id,
             pricing_policy_id,
-            certification_type,
             public_ips,
             dedicated_farm,
+            certification,
+            farming_policy_limits,
         } = f;
         Self {
             version,
@@ -468,9 +548,10 @@ impl From<pallet_tfgrid::types::Farm> for Farm {
             name: String::from_utf8_lossy(&name).into(),
             twin_id,
             pricing_policy_id,
-            certification_type: certification_type.into(),
             public_ips: public_ips.into_iter().map(PublicIP::from).collect(),
             dedicated_farm,
+            certification: certification.into(),
+            farming_policy_limits: farming_policy_limits.map(FarmingPolicyLimit::from),
         }
     }
 }
@@ -485,6 +566,7 @@ impl From<pallet_tfgrid_legacy::types::Farm> for Farm {
             pricing_policy_id,
             certification_type,
             public_ips,
+            dedicated_farm,
         } = f;
         Self {
             version,
@@ -492,9 +574,17 @@ impl From<pallet_tfgrid_legacy::types::Farm> for Farm {
             name: String::from_utf8_lossy(&name).into(),
             twin_id,
             pricing_policy_id,
-            certification_type: certification_type.into(),
+            certification: match certification_type {
+                pallet_tfgrid_legacy::types::CertificationType::Diy => {
+                    FarmCertification::NotCertified
+                }
+                pallet_tfgrid_legacy::types::CertificationType::Certified => {
+                    FarmCertification::Gold
+                }
+            },
             public_ips: public_ips.into_iter().map(PublicIP::from).collect(),
-            dedicated_farm: false,
+            dedicated_farm,
+            farming_policy_limits: None,
         }
     }
 }
@@ -506,9 +596,9 @@ pub struct PublicIP {
     pub contract_id: u64,
 }
 
-impl From<pallet_tfgrid::types::PublicIP> for PublicIP {
-    fn from(pip: pallet_tfgrid::types::PublicIP) -> Self {
-        let pallet_tfgrid::types::PublicIP {
+impl From<tfchain_support::types::PublicIP> for PublicIP {
+    fn from(pip: tfchain_support::types::PublicIP) -> Self {
+        let tfchain_support::types::PublicIP {
             ip,
             gateway,
             contract_id,
@@ -551,15 +641,16 @@ pub struct Node {
     pub created: u64,
     pub farming_policy_id: u32,
     pub interfaces: Vec<Interface>,
-    pub certification_type: CertificationType,
+    pub certification: NodeCertification,
     pub secure_boot: bool,
     pub virtualized: bool,
     pub serial_number: String,
+    pub connection_price: u32,
 }
 
-impl From<pallet_tfgrid::types::Node> for Node {
-    fn from(n: pallet_tfgrid::types::Node) -> Self {
-        let pallet_tfgrid::types::Node {
+impl From<tfchain_support::types::Node> for Node {
+    fn from(n: tfchain_support::types::Node) -> Self {
+        let tfchain_support::types::Node {
             version,
             id,
             farm_id,
@@ -572,10 +663,11 @@ impl From<pallet_tfgrid::types::Node> for Node {
             created,
             farming_policy_id,
             interfaces,
-            certification_type,
+            certification,
             secure_boot,
             virtualized,
             serial_number,
+            connection_price,
         } = n;
         Self {
             version,
@@ -590,10 +682,11 @@ impl From<pallet_tfgrid::types::Node> for Node {
             created,
             farming_policy_id,
             interfaces: interfaces.into_iter().map(Interface::from).collect(),
-            certification_type: certification_type.into(),
+            certification: certification.into(),
             secure_boot,
             virtualized,
             serial_number: String::from_utf8_lossy(&serial_number).into(),
+            connection_price,
         }
     }
 }
@@ -631,10 +724,11 @@ impl From<pallet_tfgrid_legacy::types::Node> for Node {
             created,
             farming_policy_id,
             interfaces: interfaces.into_iter().map(Interface::from).collect(),
-            certification_type: certification_type.into(),
+            certification: certification_type.into(),
             secure_boot,
             virtualized,
             serial_number: String::from_utf8_lossy(&serial_number).to_string(),
+            connection_price: 0,
         }
     }
 }
@@ -645,9 +739,9 @@ pub struct Location {
     pub latitude: String,
 }
 
-impl From<pallet_tfgrid::types::Location> for Location {
-    fn from(l: pallet_tfgrid::types::Location) -> Self {
-        let pallet_tfgrid::types::Location {
+impl From<tfchain_support::types::Location> for Location {
+    fn from(l: tfchain_support::types::Location) -> Self {
+        let tfchain_support::types::Location {
             longitude,
             latitude,
         } = l;
@@ -678,9 +772,9 @@ pub struct Interface {
     pub ips: Vec<IP>,
 }
 
-impl From<pallet_tfgrid::types::Interface> for Interface {
-    fn from(iface: pallet_tfgrid::types::Interface) -> Self {
-        let pallet_tfgrid::types::Interface { name, mac, ips } = iface;
+impl From<tfchain_support::types::Interface> for Interface {
+    fn from(iface: tfchain_support::types::Interface) -> Self {
+        let tfchain_support::types::Interface { name, mac, ips } = iface;
         Self {
             name: String::from_utf8_lossy(&name).into(),
             mac: String::from_utf8_lossy(&mac).into(),
@@ -717,9 +811,9 @@ pub struct PublicConfig {
     pub domain: String,
 }
 
-impl From<pallet_tfgrid::types::PublicConfig> for PublicConfig {
-    fn from(pc: pallet_tfgrid::types::PublicConfig) -> Self {
-        let pallet_tfgrid::types::PublicConfig {
+impl From<tfchain_support::types::PublicConfig> for PublicConfig {
+    fn from(pc: tfchain_support::types::PublicConfig) -> Self {
+        let tfchain_support::types::PublicConfig {
             ipv4,
             ipv6,
             gw4,
@@ -1039,6 +1133,13 @@ impl From<pallet_smart_contract::types::RentContract> for RentContract {
     }
 }
 
+impl From<pallet_smart_contract_legacy::types::RentContract> for RentContract {
+    fn from(nc: pallet_smart_contract_legacy::types::RentContract) -> Self {
+        let pallet_smart_contract_legacy::types::RentContract { node_id } = nc;
+        Self { node_id }
+    }
+}
+
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Debug)]
 pub enum ContractData {
     NodeContract(NodeContract),
@@ -1077,6 +1178,9 @@ impl From<pallet_smart_contract_legacy::types::ContractData> for ContractData {
             pallet_smart_contract_legacy::types::ContractData::NameContract(name_contract) => {
                 ContractData::NameContract(name_contract.into())
             }
+            pallet_smart_contract_legacy::types::ContractData::RentContract(rent_contract) => {
+                ContractData::RentContract(rent_contract.into())
+            }
         }
     }
 }
@@ -1085,6 +1189,7 @@ impl From<pallet_smart_contract_legacy::types::ContractData> for ContractData {
 pub enum ContractState {
     Created,
     Deleted(Cause),
+    GracePeriod(BlockNumber),
 }
 
 impl From<pallet_smart_contract::types::ContractState> for ContractState {
@@ -1093,6 +1198,9 @@ impl From<pallet_smart_contract::types::ContractState> for ContractState {
             pallet_smart_contract::types::ContractState::Created => ContractState::Created,
             pallet_smart_contract::types::ContractState::Deleted(cause) => {
                 ContractState::Deleted(cause.into())
+            }
+            pallet_smart_contract::types::ContractState::GracePeriod(bn) => {
+                ContractState::GracePeriod(bn as BlockNumber)
             }
         }
     }
@@ -1142,24 +1250,24 @@ pub struct CertificationCodes {
     pub certification_code_type: CertificationCodeType,
 }
 
-impl From<pallet_tfgrid::types::CertificationCodes> for CertificationCodes {
-    fn from(cc: pallet_tfgrid::types::CertificationCodes) -> Self {
-        let pallet_tfgrid::types::CertificationCodes {
-            version,
-            id,
-            name,
-            description,
-            certification_code_type,
-        } = cc;
-        Self {
-            version,
-            id,
-            name,
-            description,
-            certification_code_type: certification_code_type.into(),
-        }
-    }
-}
+// impl From<tfchain_support::types::CertificationCodes> for CertificationCodes {
+//     fn from(cc: tfchain_support::types::CertificationCodes) -> Self {
+//         let tfchain_support::types::CertificationCodes {
+//             version,
+//             id,
+//             name,
+//             description,
+//             certification_code_type,
+//         } = cc;
+//         Self {
+//             version,
+//             id,
+//             name,
+//             description,
+//             certification_code_type: certification_code_type.into(),
+//         }
+//     }
+// }
 
 impl From<pallet_tfgrid_legacy::types::CertificationCodes> for CertificationCodes {
     fn from(cc: pallet_tfgrid_legacy::types::CertificationCodes) -> Self {
@@ -1192,14 +1300,14 @@ impl Default for CertificationCodeType {
     }
 }
 
-impl From<pallet_tfgrid::types::CertificationCodeType> for CertificationCodeType {
-    fn from(cct: pallet_tfgrid::types::CertificationCodeType) -> Self {
-        match cct {
-            pallet_tfgrid::types::CertificationCodeType::Farm => CertificationCodeType::Farm,
-            pallet_tfgrid::types::CertificationCodeType::Entity => CertificationCodeType::Entity,
-        }
-    }
-}
+// impl From<pallet_tfgrid::types::CertificationCodeType> for CertificationCodeType {
+//     fn from(cct: pallet_tfgrid::types::CertificationCodeType) -> Self {
+//         match cct {
+//             pallet_tfgrid::types::CertificationCodeType::Farm => CertificationCodeType::Farm,
+//             pallet_tfgrid::types::CertificationCodeType::Entity => CertificationCodeType::Entity,
+//         }
+//     }
+// }
 
 impl From<pallet_tfgrid_legacy::types::CertificationCodeType> for CertificationCodeType {
     fn from(cct: pallet_tfgrid_legacy::types::CertificationCodeType) -> Self {
@@ -1387,6 +1495,9 @@ impl Display for ContractState {
             ContractState::Deleted(Cause::OutOfFunds) => {
                 write!(f, "Out of funds")
             }
+            ContractState::GracePeriod(bn) => {
+                write!(f, "In grace period until block {}", bn)
+            }
         }
     }
 }
@@ -1478,9 +1589,9 @@ impl Display for Node {
         }
         f.pad(&format!(
             "Certification type {}\n",
-            match self.certification_type {
-                CertificationType::Diy => "DIY",
-                CertificationType::Certified => "Certified",
+            match self.certification {
+                NodeCertification::Diy => "DIY",
+                NodeCertification::Certified => "Certified",
             }
         ))?;
         f.pad(&format!("Secure boot enabled: {}\n", self.secure_boot))?;
@@ -1496,9 +1607,9 @@ impl Display for Farm {
         writeln!(
             f,
             "Certification type {}",
-            match self.certification_type {
-                CertificationType::Diy => "DIY",
-                CertificationType::Certified => "Certified",
+            match self.certification {
+                FarmCertification::NotCertified => "Not Certified",
+                FarmCertification::Gold => "Gold",
             }
         )?;
         if !self.public_ips.is_empty() {

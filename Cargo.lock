@@ -2241,7 +2241,7 @@ dependencies = [
 [[package]]
 name = "pallet-burning"
 version = "3.0.0"
-source = "git+https://github.com/threefoldtech/tfchain?rev=c8e7c69#c8e7c692de5021d2950f07c16f37acd39ed65868"
+source = "git+https://github.com/threefoldtech/tfchain?rev=8fa07e2#8fa07e2919c0f73a6077ddf5b68cce4a97689a86"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -2259,7 +2259,7 @@ dependencies = [
 [[package]]
 name = "pallet-burning"
 version = "3.0.0"
-source = "git+https://github.com/threefoldtech/tfchain?rev=d6e6c00#d6e6c00223ff5de915e7841002ec24a96312e9f5"
+source = "git+https://github.com/threefoldtech/tfchain?rev=c8e7c69#c8e7c692de5021d2950f07c16f37acd39ed65868"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -2291,6 +2291,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-dao"
+version = "3.0.0"
+source = "git+https://github.com/threefoldtech/tfchain?rev=8fa07e2#8fa07e2919c0f73a6077ddf5b68cce4a97689a86"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "pallet-collective",
+ "pallet-membership",
+ "pallet-tfgrid 3.0.0 (git+https://github.com/threefoldtech/tfchain?rev=8fa07e2)",
+ "pallet-timestamp",
+ "parity-scale-codec 2.3.1",
+ "serde",
+ "sp-io",
+ "sp-runtime",
+ "sp-std 3.0.0",
+ "tfchain-support",
+]
+
+[[package]]
 name = "pallet-grandpa"
 version = "3.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2315,7 +2335,7 @@ dependencies = [
 [[package]]
 name = "pallet-kvstore"
 version = "3.0.0"
-source = "git+https://github.com/threefoldtech/tfchain?rev=c8e7c69#c8e7c692de5021d2950f07c16f37acd39ed65868"
+source = "git+https://github.com/threefoldtech/tfchain?rev=8fa07e2#8fa07e2919c0f73a6077ddf5b68cce4a97689a86"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -2330,7 +2350,7 @@ dependencies = [
 [[package]]
 name = "pallet-kvstore"
 version = "3.0.0"
-source = "git+https://github.com/threefoldtech/tfchain?rev=d6e6c00#d6e6c00223ff5de915e7841002ec24a96312e9f5"
+source = "git+https://github.com/threefoldtech/tfchain?rev=c8e7c69#c8e7c692de5021d2950f07c16f37acd39ed65868"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -2374,7 +2394,7 @@ dependencies = [
 [[package]]
 name = "pallet-runtime-upgrade"
 version = "3.0.0"
-source = "git+https://github.com/threefoldtech/tfchain?rev=c8e7c69#c8e7c692de5021d2950f07c16f37acd39ed65868"
+source = "git+https://github.com/threefoldtech/tfchain?rev=8fa07e2#8fa07e2919c0f73a6077ddf5b68cce4a97689a86"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -2384,7 +2404,7 @@ dependencies = [
 [[package]]
 name = "pallet-runtime-upgrade"
 version = "3.0.0"
-source = "git+https://github.com/threefoldtech/tfchain?rev=d6e6c00#d6e6c00223ff5de915e7841002ec24a96312e9f5"
+source = "git+https://github.com/threefoldtech/tfchain?rev=c8e7c69#c8e7c692de5021d2950f07c16f37acd39ed65868"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -2431,15 +2451,15 @@ dependencies = [
 [[package]]
 name = "pallet-smart-contract"
 version = "3.0.0"
-source = "git+https://github.com/threefoldtech/tfchain?rev=c8e7c69#c8e7c692de5021d2950f07c16f37acd39ed65868"
+source = "git+https://github.com/threefoldtech/tfchain?rev=8fa07e2#8fa07e2919c0f73a6077ddf5b68cce4a97689a86"
 dependencies = [
  "frame-support",
  "frame-system",
  "hex",
  "lite-json",
  "pallet-balances",
- "pallet-tfgrid 3.0.0 (git+https://github.com/threefoldtech/tfchain?rev=c8e7c69)",
- "pallet-tft-price 1.0.0 (git+https://github.com/threefoldtech/tfchain?rev=c8e7c69)",
+ "pallet-tfgrid 3.0.0 (git+https://github.com/threefoldtech/tfchain?rev=8fa07e2)",
+ "pallet-tft-price 1.0.0 (git+https://github.com/threefoldtech/tfchain?rev=8fa07e2)",
  "pallet-timestamp",
  "parity-scale-codec 2.3.1",
  "serde",
@@ -2449,20 +2469,21 @@ dependencies = [
  "sp-std 3.0.0",
  "sp-storage",
  "substrate-fixed",
+ "tfchain-support",
 ]
 
 [[package]]
 name = "pallet-smart-contract"
 version = "3.0.0"
-source = "git+https://github.com/threefoldtech/tfchain?rev=d6e6c00#d6e6c00223ff5de915e7841002ec24a96312e9f5"
+source = "git+https://github.com/threefoldtech/tfchain?rev=c8e7c69#c8e7c692de5021d2950f07c16f37acd39ed65868"
 dependencies = [
  "frame-support",
  "frame-system",
  "hex",
  "lite-json",
  "pallet-balances",
- "pallet-tfgrid 3.0.0 (git+https://github.com/threefoldtech/tfchain?rev=d6e6c00)",
- "pallet-tft-price 1.0.0 (git+https://github.com/threefoldtech/tfchain?rev=d6e6c00)",
+ "pallet-tfgrid 3.0.0 (git+https://github.com/threefoldtech/tfchain?rev=c8e7c69)",
+ "pallet-tft-price 1.0.0 (git+https://github.com/threefoldtech/tfchain?rev=c8e7c69)",
  "pallet-timestamp",
  "parity-scale-codec 2.3.1",
  "serde",
@@ -2492,7 +2513,7 @@ dependencies = [
 [[package]]
 name = "pallet-tfgrid"
 version = "3.0.0"
-source = "git+https://github.com/threefoldtech/tfchain?rev=c8e7c69#c8e7c692de5021d2950f07c16f37acd39ed65868"
+source = "git+https://github.com/threefoldtech/tfchain?rev=8fa07e2#8fa07e2919c0f73a6077ddf5b68cce4a97689a86"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -2508,12 +2529,13 @@ dependencies = [
  "sp-runtime",
  "sp-std 3.0.0",
  "sp-storage",
+ "tfchain-support",
 ]
 
 [[package]]
 name = "pallet-tfgrid"
 version = "3.0.0"
-source = "git+https://github.com/threefoldtech/tfchain?rev=d6e6c00#d6e6c00223ff5de915e7841002ec24a96312e9f5"
+source = "git+https://github.com/threefoldtech/tfchain?rev=c8e7c69#c8e7c692de5021d2950f07c16f37acd39ed65868"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -2552,7 +2574,7 @@ dependencies = [
 [[package]]
 name = "pallet-tft-price"
 version = "1.0.0"
-source = "git+https://github.com/threefoldtech/tfchain?rev=c8e7c69#c8e7c692de5021d2950f07c16f37acd39ed65868"
+source = "git+https://github.com/threefoldtech/tfchain?rev=8fa07e2#8fa07e2919c0f73a6077ddf5b68cce4a97689a86"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -2572,7 +2594,7 @@ dependencies = [
 [[package]]
 name = "pallet-tft-price"
 version = "1.0.0"
-source = "git+https://github.com/threefoldtech/tfchain?rev=d6e6c00#d6e6c00223ff5de915e7841002ec24a96312e9f5"
+source = "git+https://github.com/threefoldtech/tfchain?rev=c8e7c69#c8e7c692de5021d2950f07c16f37acd39ed65868"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -2639,6 +2661,23 @@ dependencies = [
 [[package]]
 name = "pallet-validator"
 version = "1.0.0"
+source = "git+https://github.com/threefoldtech/tfchain?rev=8fa07e2#8fa07e2919c0f73a6077ddf5b68cce4a97689a86"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "pallet-membership",
+ "parity-scale-codec 2.3.1",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std 3.0.0",
+ "substrate-validator-set 3.0.0 (git+https://github.com/threefoldtech/tfchain?rev=8fa07e2)",
+]
+
+[[package]]
+name = "pallet-validator"
+version = "1.0.0"
 source = "git+https://github.com/threefoldtech/tfchain?rev=c8e7c69#c8e7c692de5021d2950f07c16f37acd39ed65868"
 dependencies = [
  "frame-support",
@@ -2651,23 +2690,6 @@ dependencies = [
  "sp-runtime",
  "sp-std 3.0.0",
  "substrate-validator-set 3.0.0 (git+https://github.com/threefoldtech/tfchain?rev=c8e7c69)",
-]
-
-[[package]]
-name = "pallet-validator"
-version = "1.0.0"
-source = "git+https://github.com/threefoldtech/tfchain?rev=d6e6c00#d6e6c00223ff5de915e7841002ec24a96312e9f5"
-dependencies = [
- "frame-support",
- "frame-system",
- "pallet-membership",
- "parity-scale-codec 2.3.1",
- "serde",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std 3.0.0",
- "substrate-validator-set 3.0.0 (git+https://github.com/threefoldtech/tfchain?rev=d6e6c00)",
 ]
 
 [[package]]
@@ -4350,7 +4372,7 @@ dependencies = [
 [[package]]
 name = "substrate-validator-set"
 version = "3.0.0"
-source = "git+https://github.com/threefoldtech/tfchain?rev=c8e7c69#c8e7c692de5021d2950f07c16f37acd39ed65868"
+source = "git+https://github.com/threefoldtech/tfchain?rev=8fa07e2#8fa07e2919c0f73a6077ddf5b68cce4a97689a86"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -4366,7 +4388,7 @@ dependencies = [
 [[package]]
 name = "substrate-validator-set"
 version = "3.0.0"
-source = "git+https://github.com/threefoldtech/tfchain?rev=d6e6c00#d6e6c00223ff5de915e7841002ec24a96312e9f5"
+source = "git+https://github.com/threefoldtech/tfchain?rev=c8e7c69#c8e7c692de5021d2950f07c16f37acd39ed65868"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -4468,6 +4490,57 @@ checksum = "b1141d4d61095b28419e22cb0bbf02755f5e54e0526f97f1e3d1d160e60885fb"
 [[package]]
 name = "tfchain-runtime"
 version = "3.0.0"
+source = "git+https://github.com/threefoldtech/tfchain?rev=8fa07e2#8fa07e2919c0f73a6077ddf5b68cce4a97689a86"
+dependencies = [
+ "frame-executive",
+ "frame-support",
+ "frame-system",
+ "frame-system-rpc-runtime-api",
+ "pallet-aura",
+ "pallet-authorship",
+ "pallet-balances",
+ "pallet-burning 3.0.0 (git+https://github.com/threefoldtech/tfchain?rev=8fa07e2)",
+ "pallet-collective",
+ "pallet-dao",
+ "pallet-grandpa",
+ "pallet-kvstore 3.0.0 (git+https://github.com/threefoldtech/tfchain?rev=8fa07e2)",
+ "pallet-membership",
+ "pallet-randomness-collective-flip",
+ "pallet-runtime-upgrade 3.0.0 (git+https://github.com/threefoldtech/tfchain?rev=8fa07e2)",
+ "pallet-scheduler",
+ "pallet-session",
+ "pallet-smart-contract 3.0.0 (git+https://github.com/threefoldtech/tfchain?rev=8fa07e2)",
+ "pallet-sudo",
+ "pallet-tfgrid 3.0.0 (git+https://github.com/threefoldtech/tfchain?rev=8fa07e2)",
+ "pallet-tft-bridge",
+ "pallet-tft-price 1.0.0 (git+https://github.com/threefoldtech/tfchain?rev=8fa07e2)",
+ "pallet-timestamp",
+ "pallet-transaction-payment",
+ "pallet-transaction-payment-rpc-runtime-api",
+ "pallet-validator 1.0.0 (git+https://github.com/threefoldtech/tfchain?rev=8fa07e2)",
+ "parity-scale-codec 2.3.1",
+ "serde",
+ "smallvec",
+ "sp-api",
+ "sp-block-builder",
+ "sp-consensus-aura",
+ "sp-core",
+ "sp-inherents",
+ "sp-offchain",
+ "sp-runtime",
+ "sp-session",
+ "sp-staking",
+ "sp-std 3.0.0",
+ "sp-transaction-pool",
+ "sp-version",
+ "substrate-validator-set 3.0.0 (git+https://github.com/threefoldtech/tfchain?rev=8fa07e2)",
+ "substrate-wasm-builder",
+ "tfchain-support",
+]
+
+[[package]]
+name = "tfchain-runtime"
+version = "3.0.0"
 source = "git+https://github.com/threefoldtech/tfchain?rev=c8e7c69#c8e7c692de5021d2950f07c16f37acd39ed65868"
 dependencies = [
  "frame-executive",
@@ -4515,52 +4588,16 @@ dependencies = [
 ]
 
 [[package]]
-name = "tfchain-runtime"
-version = "3.0.0"
-source = "git+https://github.com/threefoldtech/tfchain?rev=d6e6c00#d6e6c00223ff5de915e7841002ec24a96312e9f5"
+name = "tfchain-support"
+version = "1.0.0"
+source = "git+https://github.com/threefoldtech/tfchain?rev=8fa07e2#8fa07e2919c0f73a6077ddf5b68cce4a97689a86"
 dependencies = [
- "frame-executive",
  "frame-support",
  "frame-system",
- "frame-system-rpc-runtime-api",
- "pallet-aura",
- "pallet-authorship",
- "pallet-balances",
- "pallet-burning 3.0.0 (git+https://github.com/threefoldtech/tfchain?rev=d6e6c00)",
- "pallet-collective",
- "pallet-grandpa",
- "pallet-kvstore 3.0.0 (git+https://github.com/threefoldtech/tfchain?rev=d6e6c00)",
- "pallet-membership",
- "pallet-randomness-collective-flip",
- "pallet-runtime-upgrade 3.0.0 (git+https://github.com/threefoldtech/tfchain?rev=d6e6c00)",
- "pallet-scheduler",
- "pallet-session",
- "pallet-smart-contract 3.0.0 (git+https://github.com/threefoldtech/tfchain?rev=d6e6c00)",
- "pallet-sudo",
- "pallet-tfgrid 3.0.0 (git+https://github.com/threefoldtech/tfchain?rev=d6e6c00)",
- "pallet-tft-bridge",
- "pallet-tft-price 1.0.0 (git+https://github.com/threefoldtech/tfchain?rev=d6e6c00)",
- "pallet-timestamp",
- "pallet-transaction-payment",
- "pallet-transaction-payment-rpc-runtime-api",
- "pallet-validator 1.0.0 (git+https://github.com/threefoldtech/tfchain?rev=d6e6c00)",
  "parity-scale-codec 2.3.1",
- "serde",
- "smallvec",
- "sp-api",
- "sp-block-builder",
- "sp-consensus-aura",
  "sp-core",
- "sp-inherents",
- "sp-offchain",
  "sp-runtime",
- "sp-session",
- "sp-staking",
  "sp-std 3.0.0",
- "sp-transaction-pool",
- "sp-version",
- "substrate-validator-set 3.0.0 (git+https://github.com/threefoldtech/tfchain?rev=d6e6c00)",
- "substrate-wasm-builder",
 ]
 
 [[package]]
@@ -4574,24 +4611,25 @@ dependencies = [
  "git-version",
  "hex",
  "pallet-balances",
+ "pallet-burning 3.0.0 (git+https://github.com/threefoldtech/tfchain?rev=8fa07e2)",
  "pallet-burning 3.0.0 (git+https://github.com/threefoldtech/tfchain?rev=c8e7c69)",
- "pallet-burning 3.0.0 (git+https://github.com/threefoldtech/tfchain?rev=d6e6c00)",
  "pallet-collective",
+ "pallet-dao",
  "pallet-grandpa",
+ "pallet-kvstore 3.0.0 (git+https://github.com/threefoldtech/tfchain?rev=8fa07e2)",
  "pallet-kvstore 3.0.0 (git+https://github.com/threefoldtech/tfchain?rev=c8e7c69)",
- "pallet-kvstore 3.0.0 (git+https://github.com/threefoldtech/tfchain?rev=d6e6c00)",
+ "pallet-runtime-upgrade 3.0.0 (git+https://github.com/threefoldtech/tfchain?rev=8fa07e2)",
  "pallet-runtime-upgrade 3.0.0 (git+https://github.com/threefoldtech/tfchain?rev=c8e7c69)",
- "pallet-runtime-upgrade 3.0.0 (git+https://github.com/threefoldtech/tfchain?rev=d6e6c00)",
  "pallet-scheduler",
  "pallet-session",
+ "pallet-smart-contract 3.0.0 (git+https://github.com/threefoldtech/tfchain?rev=8fa07e2)",
  "pallet-smart-contract 3.0.0 (git+https://github.com/threefoldtech/tfchain?rev=c8e7c69)",
- "pallet-smart-contract 3.0.0 (git+https://github.com/threefoldtech/tfchain?rev=d6e6c00)",
  "pallet-sudo",
+ "pallet-tfgrid 3.0.0 (git+https://github.com/threefoldtech/tfchain?rev=8fa07e2)",
  "pallet-tfgrid 3.0.0 (git+https://github.com/threefoldtech/tfchain?rev=c8e7c69)",
- "pallet-tfgrid 3.0.0 (git+https://github.com/threefoldtech/tfchain?rev=d6e6c00)",
  "pallet-tft-bridge",
+ "pallet-tft-price 1.0.0 (git+https://github.com/threefoldtech/tfchain?rev=8fa07e2)",
  "pallet-tft-price 1.0.0 (git+https://github.com/threefoldtech/tfchain?rev=c8e7c69)",
- "pallet-tft-price 1.0.0 (git+https://github.com/threefoldtech/tfchain?rev=d6e6c00)",
  "parity-scale-codec 2.3.1",
  "serde_json",
  "sp-application-crypto",
@@ -4599,10 +4637,11 @@ dependencies = [
  "sp-keyring",
  "sp-runtime",
  "substrate-api-client",
+ "substrate-validator-set 3.0.0 (git+https://github.com/threefoldtech/tfchain?rev=8fa07e2)",
  "substrate-validator-set 3.0.0 (git+https://github.com/threefoldtech/tfchain?rev=c8e7c69)",
- "substrate-validator-set 3.0.0 (git+https://github.com/threefoldtech/tfchain?rev=d6e6c00)",
+ "tfchain-runtime 3.0.0 (git+https://github.com/threefoldtech/tfchain?rev=8fa07e2)",
  "tfchain-runtime 3.0.0 (git+https://github.com/threefoldtech/tfchain?rev=c8e7c69)",
- "tfchain-runtime 3.0.0 (git+https://github.com/threefoldtech/tfchain?rev=d6e6c00)",
+ "tfchain-support",
 ]
 
 [[package]]

@@ -42,6 +42,9 @@ impl From<pallet_smart_contract_legacy::Event<runtime_legacy::Runtime>> for Smar
             pallet_smart_contract_legacy::Event::<runtime_legacy::Runtime>::NruConsumptionReportReceived(n) => {
                 SmartContractEvent::NruConsumption(n.contract_id, n.timestamp, n.window, n.nru)
             }
+            pallet_smart_contract_legacy::Event::<runtime_legacy::Runtime>::RentContractCanceled(contract_id) => {
+                SmartContractEvent::RentContractCancelled(contract_id)
+            }
         }
     }
 }

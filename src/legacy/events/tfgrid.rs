@@ -56,6 +56,9 @@ impl From<pallet_tfgrid_legacy::Event<runtime_legacy::Runtime>> for TFGridEvent 
                 id,
                 address,
             ) => TFGridEvent::FarmPayoutV2AddressRegistered(id, address),
+            pallet_tfgrid_legacy::Event::<runtime_legacy::Runtime>::FarmMarkedAsDedicated(farm_id) => {
+                TFGridEvent::FarmMarkedAsDedicated(farm_id)
+            }
         }
     }
 }

@@ -30,6 +30,10 @@ pub enum Event {
     NruConsumption(u64, u64, u64, u64),
     /// A rent contract was cancelled \[contract id\]
     RentContractCancelled(u64),
+    /// A contract was moved to grace period \[contract id, node id, twin id, block number\]
+    ContractGracePeriodStarted(u64, u32, u32, u64),
+    /// A contract grace period ended \[contract id, node id, twin id\]
+    ContractGracePeriodEnded(u64, u32, u32),
 }
 
 impl From<pallet_smart_contract::Event<runtime::Runtime>> for Event {
@@ -77,6 +81,17 @@ impl From<pallet_smart_contract::Event<runtime::Runtime>> for Event {
             pallet_smart_contract::Event::<runtime::Runtime>::RentContractCanceled(contract_id) => {
                 Event::RentContractCancelled(contract_id)
             }
+            pallet_smart_contract::Event::<runtime::Runtime>::ContractGracePeriodStarted(
+                contract_id,
+                node_id,
+                twin_id,
+                block,
+            ) => Event::ContractGracePeriodStarted(contract_id, node_id, twin_id, block),
+            pallet_smart_contract::Event::<runtime::Runtime>::ContractGracePeriodEnded(
+                contract_id,
+                node_id,
+                twin_id,
+            ) => Event::ContractGracePeriodEnded(contract_id, node_id, twin_id),
         }
     }
 }

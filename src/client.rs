@@ -491,7 +491,7 @@ where
 
     pub fn get_node_by_id(&self, node_id: u32, block: Option<Hash>) -> ApiResult<Option<Node>> {
         // Try to decode all known node types here.
-        let res = self.api.get_storage_map::<_, pallet_tfgrid::types::Node>(
+        let res = self.api.get_storage_map::<_, tfchain_support::types::Node>(
             "TfgridModule",
             "Nodes",
             node_id,

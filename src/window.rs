@@ -42,14 +42,15 @@ where
     {
         let client = match network {
             Network::Main => {
-                if height < 1_899_093 {
+                // TODO: force legacy as update is not live yet
+                if height < 3_899_093 {
                     client.into().as_legacy()
                 } else {
                     client.into().as_current()
                 }
             }
             Network::Test => {
-                if height < 2_626_371 {
+                if height < 3_615_198 {
                     client.into().as_legacy()
                 } else {
                     client.into().as_current()

@@ -10,6 +10,7 @@
 mod balance;
 mod burning;
 mod collective;
+mod dao;
 mod grandpa;
 mod kvstore;
 mod runtime_upgrade;
@@ -26,6 +27,7 @@ mod validator_set;
 pub use balance::Event as BalanceEvent;
 pub use burning::Event as BurningEvent;
 pub use collective::Event as CollectiveEvent;
+pub use dao::Event as DaoEvent;
 pub use grandpa::Event as GrandpaEvent;
 pub use kvstore::Event as KVEvent;
 pub use runtime_upgrade::Event as RuntimeUpgradeEvent;
@@ -56,6 +58,7 @@ pub enum TfchainEvent {
     Scheduler(SchedulerEvent),
     Collective(CollectiveEvent),
     Session(SessionEvent),
+    Dao(DaoEvent),
     /// An event which the current library does not decode
     Unknown,
 }
@@ -80,6 +83,7 @@ impl From<runtime::Event> for TfchainEvent {
             runtime::Event::pallet_scheduler(se) => TfchainEvent::Scheduler(se.into()),
             runtime::Event::pallet_collective_Instance1(ce) => TfchainEvent::Collective(ce.into()),
             runtime::Event::pallet_session(se) => TfchainEvent::Session(se.into()),
+            runtime::Event::pallet_dao(de) => TfchainEvent::Dao(de.into()),
             // TODO, ignored for now
             runtime::Event::pallet_membership_Instance1(_)
             | runtime::Event::pallet_validator(_) => TfchainEvent::Unknown,

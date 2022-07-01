@@ -1,5 +1,6 @@
 use crate::types::{
-    CertificationCodes, Entity, Farm, FarmingPolicy, Node, PricingPolicy, PublicConfig, Twin,
+    AccountId32, CertificationCodes, Entity, Farm, FarmCertification, FarmingPolicy,
+    FarmingPolicyLimit, Node, NodeCertification, PricingPolicy, PublicConfig, Twin,
 };
 
 #[derive(Debug)]
@@ -27,11 +28,19 @@ pub enum Event {
 
     PricingPolicyStored(PricingPolicy),
     CertificationCodeStored(CertificationCodes),
-    FarmingPolicyStored(FarmingPolicy),
+    FarmingPolicyStored(FarmingPolicy<u32>),
     FarmPayoutV2AddressRegistered(u32, Vec<u8>),
 
     /// Farm has been marked as dedicated \[farm id\]
     FarmMarkedAsDedicated(u32),
+
+    ConnectionPriceSet(u32),
+    NodeCertificationSet(u32, NodeCertification),
+    NodeCertifierAdded(AccountId32),
+    NodeCertifierRemoved(AccountId32),
+    FarmingPolicyUpdated(FarmingPolicy<u32>),
+    FarmingPolicySet(u32, Option<FarmingPolicyLimit>),
+    FarmCertificationSet(u32, FarmCertification),
 }
 
 impl From<pallet_tfgrid::Event<runtime::Runtime>> for Event {
@@ -80,9 +89,9 @@ impl From<pallet_tfgrid::Event<runtime::Runtime>> for Event {
             pallet_tfgrid::Event::<runtime::Runtime>::PricingPolicyStored(policy) => {
                 Event::PricingPolicyStored(policy.into())
             }
-            pallet_tfgrid::Event::<runtime::Runtime>::CertificationCodeStored(cc) => {
-                Event::CertificationCodeStored(cc.into())
-            }
+            // pallet_tfgrid::Event::<runtime::Runtime>::CertificationCodeStored(cc) => {
+            //     Event::CertificationCodeStored(cc.into())
+            // }
             pallet_tfgrid::Event::<runtime::Runtime>::FarmingPolicyStored(fp) => {
                 Event::FarmingPolicyStored(fp.into())
             }
@@ -92,6 +101,27 @@ impl From<pallet_tfgrid::Event<runtime::Runtime>> for Event {
             ) => Event::FarmPayoutV2AddressRegistered(id, address),
             pallet_tfgrid::Event::<runtime::Runtime>::FarmMarkedAsDedicated(farm_id) => {
                 Event::FarmMarkedAsDedicated(farm_id)
+            }
+            pallet_tfgrid::Event::<runtime::Runtime>::ConnectionPriceSet(node_id) => {
+                Event::ConnectionPriceSet(node_id)
+            }
+            pallet_tfgrid::Event::<runtime::Runtime>::NodeCertificationSet(node_id, nc) => {
+                Event::NodeCertificationSet(node_id, nc.into())
+            }
+            pallet_tfgrid::Event::<runtime::Runtime>::NodeCertifierAdded(who) => {
+                Event::NodeCertifierAdded(who)
+            }
+            pallet_tfgrid::Event::<runtime::Runtime>::NodeCertifierRemoved(who) => {
+                Event::NodeCertifierRemoved(who)
+            }
+            pallet_tfgrid::Event::<runtime::Runtime>::FarmingPolicyUpdated(policy) => {
+                Event::FarmingPolicyUpdated(policy.into())
+            }
+            pallet_tfgrid::Event::<runtime::Runtime>::FarmingPolicySet(policy_id, limit) => {
+                Event::FarmingPolicySet(policy_id, limit.map(FarmingPolicyLimit::from))
+            }
+            pallet_tfgrid::Event::<runtime::Runtime>::FarmCertificationSet(farm_id, cert) => {
+                Event::FarmCertificationSet(farm_id, cert.into())
             }
         }
     }
