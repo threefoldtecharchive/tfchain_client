@@ -2,7 +2,9 @@
 
 use crate::client::SharedClient;
 use crate::events;
-use crate::types::{BlockNumber, Contract, ContractState, Farm, Hash, Node, Resources};
+use crate::types::{
+    BlockNumber, Contract, ContractState, Farm, FarmingPolicy, Hash, Node, Resources,
+};
 use chrono::prelude::*;
 use sp_core::crypto::Pair;
 use std::fmt;
@@ -180,6 +182,16 @@ where
         })
     }
 
+    pub fn farm_policies(&self) -> WindowResult<FarmPolicyIterator<P>> {
+        let amount = self.client.farm_policy_count(self.hash())?;
+        Ok(FarmPolicyIterator {
+            client: self.client.clone(),
+            block: self.hash(),
+            amount,
+            current: 0,
+        })
+    }
+
     /// Get the farm stellar address in the block pointed at by the current [Window].
     ///
     /// Setting this is optional and the responsibility of the farmer.
@@ -322,6 +334,47 @@ where
                             Some(Ok((contract, cr)))
                         }
                     }
+                    None => continue,
+                },
+                Err(err) => Some(Err(err)),
+            };
+        }
+    }
+}
+
+pub struct FarmPolicyIterator<P>
+where
+    P: Pair,
+    MultiSignature: From<P::Signature>,
+{
+    client: EventTypedClient<P>,
+    block: Option<Hash>,
+    amount: u32,
+    current: u32,
+}
+
+impl<P> Iterator for FarmPolicyIterator<P>
+where
+    P: Pair,
+    MultiSignature: From<P::Signature>,
+{
+    type Item = WindowResult<FarmingPolicy<u32>>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        loop {
+            // Farms start at index 1
+            self.current += 1;
+            if self.current > self.amount {
+                return None;
+            }
+
+            return match self
+                .client
+                .get_farm_policy_by_id(self.current, self.block)
+                .map_err(WindowError::from)
+            {
+                Ok(maybe_policy) => match maybe_policy {
+                    Some(policy) => Some(Ok(policy)),
                     None => continue,
                 },
                 Err(err) => Some(Err(err)),
@@ -475,6 +528,17 @@ where
         }
     }
 
+    fn get_farm_policy_by_id(
+        &self,
+        farm_policy_id: u32,
+        block: Option<Hash>,
+    ) -> crate::client::ApiResult<Option<FarmingPolicy<BlockNumber>>> {
+        match self {
+            EventTypedClient::Current(ref sc) => sc.get_farming_policy(farm_policy_id, block),
+            EventTypedClient::Legacy(ref sc) => sc.get_farming_policy(farm_policy_id, block),
+        }
+    }
+
     fn get_farm_payout_address(
         &self,
         farm_id: u32,
@@ -504,6 +568,13 @@ where
         match self {
             EventTypedClient::Current(ref sc) => sc.farm_count(block),
             EventTypedClient::Legacy(ref sc) => sc.farm_count(block),
+        }
+    }
+
+    fn farm_policy_count(&self, block: Option<Hash>) -> crate::client::ApiResult<u32> {
+        match self {
+            EventTypedClient::Current(ref sc) => sc.farm_policy_count(block),
+            EventTypedClient::Legacy(ref sc) => sc.farm_policy_count(block),
         }
     }
 

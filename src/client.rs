@@ -3,6 +3,7 @@
 
 use crate::events::TfchainEvent;
 use crate::types::ContractResources;
+use crate::types::FarmingPolicy;
 pub use crate::types::Hash;
 use crate::types::{AccountData, AccountInfo, BlockNumber, Contract, Farm, Node, Twin};
 use runtime::Block;
@@ -266,6 +267,36 @@ where
                 x => return x,
             }
             res = self.inner.contract_count(block);
+        }
+
+        res
+    }
+
+    pub fn get_farming_policy(
+        &self,
+        policy_id: u32,
+        block: Option<Hash>,
+    ) -> ApiResult<Option<FarmingPolicy<BlockNumber>>> {
+        let mut res = self.inner.get_farming_policy(policy_id, block);
+        for _ in 0..5 {
+            match res {
+                Err(ApiClientError::Disconnected(_)) => {}
+                x => return x,
+            }
+            res = self.inner.get_farming_policy(policy_id, block);
+        }
+
+        res
+    }
+
+    pub fn farm_policy_count(&self, block: Option<Hash>) -> ApiResult<u32> {
+        let mut res = self.inner.farm_policy_count(block);
+        for _ in 0..5 {
+            match res {
+                Err(ApiClientError::Disconnected(_)) => {}
+                x => return x,
+            }
+            res = self.inner.farm_policy_count(block);
         }
 
         res
@@ -543,6 +574,22 @@ where
         // Safety: contractID is initialized in genesis so this value is always set.
         self.api
             .get_storage_value("SmartContractModule", "ContractID", block)
+            .map(|i| i.unwrap_or(0))
+    }
+
+    pub fn get_farming_policy(
+        &self,
+        policy_id: u32,
+        block: Option<Hash>,
+    ) -> ApiResult<Option<FarmingPolicy<BlockNumber>>> {
+        self.api
+            .get_storage_map("TfgridModule", "FarmingPoliciesMap", policy_id, block)
+    }
+
+    pub fn farm_policy_count(&self, block: Option<Hash>) -> ApiResult<u32> {
+        // Safety: FarmingPolicyID is initialized in genesis so this value is always set.
+        self.api
+            .get_storage_value("TfgridModule", "FarmingPolicyID", block)
             .map(|i| i.unwrap_or(0))
     }
 
