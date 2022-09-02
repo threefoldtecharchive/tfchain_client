@@ -167,7 +167,8 @@ version = "3.0.0"
 [dependencies.pallet_tft_bridge]
 git = "https://github.com/threefoldtech/tfchain_tft_bridge"
 package = "pallet-tft-bridge"
-branch = "main"
+# branch = "main"
+rev = "e186513"
 
 [dependencies.sp-runtime]
 version = "3.0.0"
