@@ -1189,7 +1189,7 @@ impl From<pallet_smart_contract_legacy::types::ContractData> for ContractData {
 pub enum ContractState {
     Created,
     Deleted(Cause),
-    GracePeriod(BlockNumber),
+    GracePeriod(u64),
 }
 
 impl From<pallet_smart_contract::types::ContractState> for ContractState {
@@ -1200,7 +1200,7 @@ impl From<pallet_smart_contract::types::ContractState> for ContractState {
                 ContractState::Deleted(cause.into())
             }
             pallet_smart_contract::types::ContractState::GracePeriod(bn) => {
-                ContractState::GracePeriod(bn as BlockNumber)
+                ContractState::GracePeriod(bn)
             }
         }
     }

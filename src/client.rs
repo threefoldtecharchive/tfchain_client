@@ -418,10 +418,10 @@ where
             if block_delta == 0 {
                 if time_delta >= 0 {
                     // the timestamp is slightly before this block, so return the this block;
-                    return Ok((height + 1) as u32);
+                    return Ok(height + 1);
                 } else {
                     // the timestamp is slightly past this block, so return the next block;
-                    return Ok(height as u32);
+                    return Ok(height);
                 }
             }
             // check that the delta is in range
@@ -434,7 +434,7 @@ where
 
             // adjust height
             last_height = height;
-            // we can't just cast block_delta to u32 here, as that would misbehave in case delta is
+            // we can't just cast block_delta here, as that would misbehave in case delta is
             // negative
             height = (height as i64 + block_delta) as u32;
         }
