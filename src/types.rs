@@ -1,5 +1,6 @@
 use chrono::prelude::*;
 use codec::{Decode, Encode};
+use serde::{Deserialize, Serialize};
 pub use sp_application_crypto::ed25519;
 pub use sp_core::crypto::AccountId32;
 pub use sp_core::H256 as Hash;
@@ -7,7 +8,7 @@ use std::fmt::{self, Display};
 pub use substrate_api_client::{AccountData, AccountInfo};
 pub use support::traits::BalanceStatus;
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Debug)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Debug, Serialize, Deserialize)]
 pub enum NodeCertification {
     Diy,
     Certified,
@@ -39,7 +40,9 @@ impl From<pallet_tfgrid_legacy::types::CertificationType> for NodeCertification 
     }
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug)]
+#[derive(
+    PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug, Serialize, Deserialize,
+)]
 pub struct FarmingPolicy<BlockNumber> {
     pub version: u32,
     pub id: u32,
@@ -129,7 +132,9 @@ impl From<pallet_tfgrid_legacy::types::FarmingPolicy> for FarmingPolicy<BlockNum
     }
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug)]
+#[derive(
+    PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug, Serialize, Deserialize,
+)]
 pub struct Policy {
     pub value: u32,
     pub unit: Unit,
@@ -155,7 +160,7 @@ impl From<pallet_tfgrid_legacy::types::Policy> for Policy {
     }
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Debug)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Debug, Serialize, Deserialize)]
 pub enum Unit {
     Bytes,
     Kilobytes,
@@ -194,7 +199,9 @@ impl From<pallet_tfgrid_legacy::types::Unit> for Unit {
     }
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug)]
+#[derive(
+    PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug, Serialize, Deserialize,
+)]
 pub struct Resources {
     pub hru: u64,
     pub sru: u64,
@@ -202,7 +209,9 @@ pub struct Resources {
     pub mru: u64,
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug)]
+#[derive(
+    PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug, Serialize, Deserialize,
+)]
 pub struct ContractResources {
     pub contract_id: u64,
     pub used: Resources,
@@ -222,7 +231,9 @@ impl From<pallet_tfgrid_legacy::types::Resources> for Resources {
     }
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug)]
+#[derive(
+    PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug, Serialize, Deserialize,
+)]
 pub struct PricingPolicy {
     pub version: u32,
     pub id: u32,
@@ -313,7 +324,7 @@ pub type AuthorityId = ed25519::Public;
 /// The weight of an authority.
 pub type AuthorityWeight = u64;
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Balance(u64);
 
 impl From<u64> for Balance {
@@ -331,7 +342,9 @@ impl Balance {
 
 pub type BlockNumber = u32;
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug)]
+#[derive(
+    PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug, Serialize, Deserialize,
+)]
 pub struct Twin {
     pub version: u32,
     pub id: u32,
@@ -378,7 +391,9 @@ impl From<pallet_tfgrid_legacy::types::Twin<AccountId32>> for Twin {
     }
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Debug, Encode, Decode, Default)]
+#[derive(
+    PartialEq, Eq, PartialOrd, Ord, Clone, Debug, Encode, Decode, Default, Serialize, Deserialize,
+)]
 pub struct Entity {
     pub version: u32,
     pub id: u32,
@@ -430,7 +445,9 @@ impl From<pallet_tfgrid_legacy::types::Entity<AccountId32>> for Entity {
     }
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug)]
+#[derive(
+    PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug, Serialize, Deserialize,
+)]
 pub struct EntityProof {
     pub entity_id: u32,
     pub signature: Vec<u8>,
@@ -462,7 +479,9 @@ impl From<pallet_tfgrid_legacy::types::EntityProof> for EntityProof {
     }
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug)]
+#[derive(
+    PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug, Serialize, Deserialize,
+)]
 pub struct Farm {
     pub version: u32,
     pub id: u32,
@@ -475,7 +494,7 @@ pub struct Farm {
     pub farming_policy_limits: Option<FarmingPolicyLimit>,
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Debug)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Debug, Serialize, Deserialize)]
 pub enum FarmCertification {
     NotCertified,
     Gold,
@@ -498,7 +517,9 @@ impl From<tfchain_support::types::FarmCertification> for FarmCertification {
     }
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug)]
+#[derive(
+    PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug, Serialize, Deserialize,
+)]
 pub struct FarmingPolicyLimit {
     pub farming_policy_id: u32,
     pub cu: Option<u64>,
@@ -589,7 +610,9 @@ impl From<pallet_tfgrid_legacy::types::Farm> for Farm {
     }
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug)]
+#[derive(
+    PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug, Serialize, Deserialize,
+)]
 pub struct PublicIP {
     pub ip: String,
     pub gateway: String,
@@ -626,7 +649,9 @@ impl From<pallet_tfgrid_legacy::types::PublicIP> for PublicIP {
     }
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug)]
+#[derive(
+    PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug, Serialize, Deserialize,
+)]
 pub struct Node {
     pub version: u32,
     pub id: u32,
@@ -733,7 +758,9 @@ impl From<pallet_tfgrid_legacy::types::Node> for Node {
     }
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug)]
+#[derive(
+    PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug, Serialize, Deserialize,
+)]
 pub struct Location {
     pub longitude: String,
     pub latitude: String,
@@ -765,7 +792,9 @@ impl From<pallet_tfgrid_legacy::types::Location> for Location {
     }
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug)]
+#[derive(
+    PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug, Serialize, Deserialize,
+)]
 pub struct Interface {
     pub name: String,
     pub mac: String,
@@ -802,7 +831,9 @@ impl From<pallet_tfgrid_legacy::types::Interface> for Interface {
 
 pub type IP = String;
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug)]
+#[derive(
+    PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug, Serialize, Deserialize,
+)]
 pub struct PublicConfig {
     pub ipv4: String,
     pub ipv6: String,
@@ -849,7 +880,7 @@ impl From<pallet_tfgrid_legacy::types::PublicConfig> for PublicConfig {
     }
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Debug)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Debug, Serialize, Deserialize)]
 pub enum DiscountLevel {
     None,
     Default,
@@ -901,7 +932,9 @@ impl From<pallet_smart_contract_legacy::types::DiscountLevel> for DiscountLevel 
     }
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug)]
+#[derive(
+    PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug, Serialize, Deserialize,
+)]
 pub struct Consumption {
     pub contract_id: u64,
     pub timestamp: u64,
@@ -958,7 +991,9 @@ impl From<pallet_smart_contract_legacy::types::Consumption> for Consumption {
     }
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug)]
+#[derive(
+    PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug, Serialize, Deserialize,
+)]
 pub struct ContractBill {
     pub contract_id: u64,
     pub timestamp: u64,
@@ -1000,7 +1035,9 @@ impl From<pallet_smart_contract_legacy::types::ContractBill> for ContractBill {
     }
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug)]
+#[derive(
+    PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug, Serialize, Deserialize,
+)]
 pub struct Contract {
     pub version: u32,
     pub state: ContractState,
@@ -1047,7 +1084,9 @@ impl From<pallet_smart_contract_legacy::types::Contract> for Contract {
     }
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug)]
+#[derive(
+    PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug, Serialize, Deserialize,
+)]
 pub struct NodeContract {
     pub node_id: u32,
     // deployment_data is the encrypted deployment body. This encrypted the deployment with the **USER** public key.
@@ -1098,7 +1137,9 @@ impl From<pallet_smart_contract_legacy::types::NodeContract> for NodeContract {
     }
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug)]
+#[derive(
+    PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug, Serialize, Deserialize,
+)]
 pub struct NameContract {
     pub name: String,
 }
@@ -1121,7 +1162,9 @@ impl From<pallet_smart_contract_legacy::types::NameContract> for NameContract {
     }
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug)]
+#[derive(
+    PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug, Serialize, Deserialize,
+)]
 pub struct RentContract {
     pub node_id: u32,
 }
@@ -1140,7 +1183,7 @@ impl From<pallet_smart_contract_legacy::types::RentContract> for RentContract {
     }
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Debug)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Debug, Serialize, Deserialize)]
 pub enum ContractData {
     NodeContract(NodeContract),
     NameContract(NameContract),
@@ -1185,7 +1228,7 @@ impl From<pallet_smart_contract_legacy::types::ContractData> for ContractData {
     }
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Debug)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Debug, Serialize, Deserialize)]
 pub enum ContractState {
     Created,
     Deleted(Cause),
@@ -1217,7 +1260,7 @@ impl From<pallet_smart_contract_legacy::types::ContractState> for ContractState 
     }
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Debug)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Debug, Serialize, Deserialize)]
 pub enum Cause {
     CanceledByUser,
     OutOfFunds,
@@ -1241,7 +1284,9 @@ impl From<pallet_smart_contract_legacy::types::Cause> for Cause {
     }
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug)]
+#[derive(
+    PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug, Serialize, Deserialize,
+)]
 pub struct CertificationCodes {
     pub version: u32,
     pub id: u32,
@@ -1288,7 +1333,7 @@ impl From<pallet_tfgrid_legacy::types::CertificationCodes> for CertificationCode
     }
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Debug)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Debug, Serialize, Deserialize)]
 pub enum CertificationCodeType {
     Farm,
     Entity,
@@ -1323,7 +1368,7 @@ impl From<pallet_tfgrid_legacy::types::CertificationCodeType> for CertificationC
 /// MintTransaction contains all the information about
 /// Stellar -> TF Chain minting transaction.
 /// if the votes field is larger then (number of validators / 2) + 1 , the transaction will be minted
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct MintTransaction {
     pub amount: Balance,
     pub target: AccountId32,
@@ -1351,7 +1396,7 @@ impl From<pallet_tft_bridge::MintTransaction<AccountId32, u32>> for MintTransact
 /// BurnTransaction contains all the information about
 /// TF Chain -> Stellar burn transaction
 /// Transaction is ready when (number of validators / 2) + 1 signatures are present
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct BurnTransaction {
     pub block: BlockNumber,
     pub amount: Balance,
@@ -1379,7 +1424,7 @@ impl From<pallet_tft_bridge::BurnTransaction<u32>> for BurnTransaction {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct RefundTransaction {
     pub block: BlockNumber,
     pub amount: Balance,
@@ -1410,7 +1455,9 @@ impl From<pallet_tft_bridge::RefundTransaction<u32>> for RefundTransaction {
     }
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug)]
+#[derive(
+    PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Default, Debug, Serialize, Deserialize,
+)]
 pub struct StellarSignature {
     pub signature: Vec<u8>,
     pub stellar_pub_key: Vec<u8>,
