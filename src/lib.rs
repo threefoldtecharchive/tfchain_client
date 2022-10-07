@@ -1,8 +1,9 @@
 use subxt::{
-    events::Events,
     rpc::{BlockNumber, NumberOrHex},
     OnlineClient, PolkadotConfig,
 };
+
+pub use subxt::events::Events;
 
 pub mod testnet;
 
