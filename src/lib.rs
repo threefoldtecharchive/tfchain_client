@@ -4,7 +4,7 @@ use subxt::{
 };
 
 pub use subxt::events::Events;
-pub use subxt::rpc::PolkadotConfig;
+pub use subxt::PolkadotConfig;
 
 pub mod testnet;
 
