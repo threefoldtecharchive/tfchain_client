@@ -6,7 +6,9 @@ use subxt::{
 pub use subxt::events::Events;
 pub use subxt::PolkadotConfig;
 
-pub mod testnet;
+pub mod runtimes;
+
+use runtimes::v114;
 
 const BLOCK_TIME_SECONDS: i64 = 6;
 
@@ -99,7 +101,7 @@ impl Client {
             .api
             .storage()
             .fetch(
-                &testnet::api::storage().timestamp().now(),
+                &v114::api::storage().timestamp().now(),
                 self.hash_at_height(block).await?,
             )
             .await?
@@ -114,7 +116,7 @@ mod tests {
 
     #[tokio::test]
     async fn event_decode() {
-        let client = Client::new("wss://tfchain.test.grid.tf:443", Runtime::Testnet)
+        let client = Client::new("wss://tfchain.test.grid.tf:443", Runtime::v114)
             .await
             .unwrap();
 
@@ -133,7 +135,7 @@ mod tests {
             if evt.variant_name() == "NruConsumptionReportReceived"
                 && evt.pallet_name() == "SmartContractModule"
             {
-                let nru_report = evt.as_event::<testnet::api::smart_contract_module::events::NruConsumptionReportReceived>().unwrap().unwrap();
+                let nru_report = evt.as_event::<v114::api::smart_contract_module::events::NruConsumptionReportReceived>().unwrap().unwrap();
                 println!(
                     "Got nru consumption report for contract {}, consumed {} bytes",
                     nru_report.0.contract_id, nru_report.0.nru
@@ -143,7 +145,7 @@ mod tests {
     }
     #[tokio::test]
     async fn get_nodes() {
-        let client = Client::new("wss://tfchain.test.grid.tf:443", Runtime::Testnet)
+        let client = Client::new("wss://tfchain.test.grid.tf:443", Runtime::v114)
             .await
             .unwrap();
         //let nodes = client.nodes(4600000).await.unwrap();
