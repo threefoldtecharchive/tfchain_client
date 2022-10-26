@@ -6,27 +6,22 @@ use subxt::{
 pub use subxt::events::Events;
 pub use subxt::PolkadotConfig;
 
+pub mod client;
+pub mod events;
 pub mod runtimes;
 
 use runtimes::v114;
 
 const BLOCK_TIME_SECONDS: i64 = 6;
 
-pub enum Runtime {
-    Devnet,
-    Testnet,
-    Mainnet,
-}
-
 pub struct Client {
     api: OnlineClient<PolkadotConfig>,
-    runtime: Runtime,
 }
 
 impl Client {
-    pub async fn new(url: &str, runtime: Runtime) -> Result<Self, Box<dyn std::error::Error>> {
+    pub async fn new(url: &str) -> Result<Self, Box<dyn std::error::Error>> {
         let api = OnlineClient::from_url(url).await?;
-        Ok(Client { api, runtime })
+        Ok(Client { api })
     }
 
     pub async fn get_events(
@@ -116,9 +111,7 @@ mod tests {
 
     #[tokio::test]
     async fn event_decode() {
-        let client = Client::new("wss://tfchain.test.grid.tf:443", Runtime::v114)
-            .await
-            .unwrap();
+        let client = Client::new("wss://tfchain.test.grid.tf:443").await.unwrap();
 
         let evts = client.get_events(Some(4240025)).await.unwrap();
         for evt in evts.iter() {
@@ -145,9 +138,7 @@ mod tests {
     }
     #[tokio::test]
     async fn get_nodes() {
-        let client = Client::new("wss://tfchain.test.grid.tf:443", Runtime::v114)
-            .await
-            .unwrap();
+        let client = Client::new("wss://tfchain.test.grid.tf:443").await.unwrap();
         //let nodes = client.nodes(4600000).await.unwrap();
     }
 }

@@ -9,6 +9,7 @@ edition = "2021"
 subxt = "0.24"
 codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = ["derive", "full", "bit-vec"] }
 sp-keyring = "6.0.0"
+async-trait = "0.1"
 
 [dev-dependencies]
 tokio = { version = "1.21.2", features = ["full"] }
