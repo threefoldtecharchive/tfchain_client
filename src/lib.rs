@@ -9,6 +9,7 @@ pub use subxt::PolkadotConfig;
 pub mod client;
 pub mod events;
 pub mod runtimes;
+pub mod types;
 
 use runtimes::v114;
 
