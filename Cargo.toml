@@ -15,7 +15,7 @@ name = "tfchain_cli"
 
 [dependencies]
 #substrate-api-client = { git = "https://github.com/scs/substrate-api-client", rev = "a08d8ae8017535051975f5a7ff20bd93d35e4eb3" }
-substrate-api-client = { git = "https://github.com/LeeSmet/substrate-api-client", branch = "static_metadata" }
+substrate-api-client = { git = "https://github.com/LeeSmet/substrate-api-client", branch = "static_metadata_mainnet" }
 codec = { package = "parity-scale-codec", features = ["derive"], version = "2.0.0", default-features = false }
 hex = { version = "0.4", default-features = false }
 clap = "3.0.5"

@@ -4310,7 +4310,7 @@ dependencies = [
 [[package]]
 name = "substrate-api-client"
 version = "0.5.0"
-source = "git+https://github.com/LeeSmet/substrate-api-client?branch=static_metadata#1a0b44414145722c59f9e7437939dd6309e0b3bc"
+source = "git+https://github.com/LeeSmet/substrate-api-client?branch=static_metadata_mainnet#fccc373588383a7e3cbd00b2e69f1daf140df8bb"
 dependencies = [
  "env_logger",
  "frame-metadata",
