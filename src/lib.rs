@@ -3,8 +3,8 @@ use subxt::{
     OnlineClient,
 };
 
-pub use subxt::events::Events;
-pub use subxt::PolkadotConfig;
+use subxt::events::Events;
+use subxt::PolkadotConfig;
 
 pub mod client;
 pub mod events;

@@ -1,5 +1,5 @@
-use subxt::events::Events;
-use subxt::PolkadotConfig;
+pub use subxt::events::Events;
+pub use subxt::PolkadotConfig;
 
 use crate::types::{Contract, ContractResources, Farm, FarmPolicy, Node, Twin};
 
@@ -41,40 +41,56 @@ pub trait RuntimeClient {
     async fn timestamp(&self, block: Option<Hash>) -> Result<i64, Box<dyn std::error::Error>>;
 
     /// Get the twin referenced by this ID.
-    async fn twin(&self, id: u32) -> Result<Twin, Box<dyn std::error::Error>>;
+    async fn twin(
+        &self,
+        id: u32,
+        block: Option<Hash>,
+    ) -> Result<Option<Twin>, Box<dyn std::error::Error>>;
 
     /// Get the amount of twins on the grid.
-    async fn twin_count(&self) -> Result<u32, Box<dyn std::error::Error>>;
+    async fn twin_count(&self, block: Option<Hash>) -> Result<u32, Box<dyn std::error::Error>>;
 
     /// Get the farm referenced by this ID.
-    async fn farm(&self, id: u32) -> Result<Farm, Box<dyn std::error::Error>>;
+    async fn farm(&self, id: u32, block: Option<Hash>) -> Result<Farm, Box<dyn std::error::Error>>;
 
     /// Get the amount of farms on the grid.
-    async fn farm_count(&self) -> Result<u32, Box<dyn std::error::Error>>;
+    async fn farm_count(&self, block: Option<Hash>) -> Result<u32, Box<dyn std::error::Error>>;
 
     /// Get the node referenced by this ID.
-    async fn node(&self, id: u32) -> Result<Node, Box<dyn std::error::Error>>;
+    async fn node(&self, id: u32, block: Option<Hash>) -> Result<Node, Box<dyn std::error::Error>>;
 
     /// Get the amount of nodes on the grid.
-    async fn node_count(&self) -> Result<u32, Box<dyn std::error::Error>>;
+    async fn node_count(&self, block: Option<Hash>) -> Result<u32, Box<dyn std::error::Error>>;
 
     /// Get the contract referenced by this ID.
-    async fn contract(&self, id: u64) -> Result<Contract, Box<dyn std::error::Error>>;
+    async fn contract(
+        &self,
+        id: u64,
+        block: Option<Hash>,
+    ) -> Result<Contract, Box<dyn std::error::Error>>;
 
     /// Get the resources of the contract referenced by this ID.
     async fn contract_resources(
         &self,
         id: u64,
+        block: Option<Hash>,
     ) -> Result<ContractResources, Box<dyn std::error::Error>>;
 
     /// Get the amount of contracts on the grid.
-    async fn contract_count(&self) -> Result<u64, Box<dyn std::error::Error>>;
+    async fn contract_count(&self, block: Option<Hash>) -> Result<u64, Box<dyn std::error::Error>>;
 
     /// Get the farming policy referenced by this ID.
-    async fn farming_policy(&self, id: u32) -> Result<FarmPolicy, Box<dyn std::error::Error>>;
+    async fn farming_policy(
+        &self,
+        id: u32,
+        block: Option<Hash>,
+    ) -> Result<FarmPolicy, Box<dyn std::error::Error>>;
 
     /// Get the amount of farming policies on the grid.
-    async fn farming_policy_count(&self) -> Result<u32, Box<dyn std::error::Error>>;
+    async fn farming_policy_count(
+        &self,
+        block: Option<Hash>,
+    ) -> Result<u32, Box<dyn std::error::Error>>;
 }
 
 /// Find the height of the chain at the given timestamp.
