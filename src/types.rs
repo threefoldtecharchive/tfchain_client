@@ -1,5 +1,6 @@
 use std::net::IpAddr;
 
+/// The hash type used on the TfChain.
 pub type Hash = subxt::ext::sp_core::H256;
 
 /// Public Key type, this is a placeholder.

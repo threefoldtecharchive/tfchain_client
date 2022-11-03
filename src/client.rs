@@ -1,13 +1,10 @@
 pub use subxt::events::Events;
 pub use subxt::PolkadotConfig;
 
-use crate::types::{Contract, ContractResources, Farm, FarmPolicy, Node, Twin};
+use crate::types::{Contract, ContractResources, Farm, FarmPolicy, Hash, Node, Twin};
 
 /// The expected amount of seconds per block.
 const BLOCK_TIME_SECONDS: i64 = 6;
-
-/// The hash type used on the TfChain.
-pub type Hash = subxt::ext::sp_core::H256;
 
 /// This is the general set of methods which are available on the individual runtime libraries. In
 /// general, methods and types here will adhere to the latest format on the grid, as to have all

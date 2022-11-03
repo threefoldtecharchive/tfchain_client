@@ -1,7 +1,7 @@
 use super::runtime;
 use crate::{
-    client::{Hash, RuntimeClient},
-    types::{Contract, ContractResources, Farm, FarmPolicy, Node, Twin},
+    client::RuntimeClient,
+    types::{Contract, ContractResources, Farm, FarmPolicy, Hash, Node, Twin},
 };
 use subxt::{
     events::Events,
