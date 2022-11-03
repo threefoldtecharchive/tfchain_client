@@ -78,7 +78,12 @@ impl RuntimeClient for Client {
         id: u32,
         block: Option<Hash>,
     ) -> Result<Option<Farm>, Box<dyn std::error::Error>> {
-        todo!()
+        Ok(self
+            .api
+            .storage()
+            .fetch(&runtime::api::storage().tfgrid_module().farms(id), block)
+            .await?
+            .map(|t| t.into()))
     }
 
     /// Get the amount of farms on the grid.
