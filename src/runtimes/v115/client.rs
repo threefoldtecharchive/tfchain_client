@@ -13,6 +13,13 @@ pub struct Client {
     api: OnlineClient<PolkadotConfig>,
 }
 
+impl Client {
+    pub async fn new(url: &str) -> Result<Self, Box<dyn std::error::Error>> {
+        let api = OnlineClient::from_url(url).await?;
+        Ok(Client { api })
+    }
+}
+
 #[async_trait::async_trait]
 impl RuntimeClient for Client {
     /// Get all events in a block.
