@@ -1,5 +1,7 @@
 use std::net::IpAddr;
 
+pub type Hash = subxt::ext::sp_core::H256;
+
 /// Public Key type, this is a placeholder.
 pub type PublicKey = [u8; 32];
 /// Signature type, this is a placeholder.
@@ -88,7 +90,47 @@ pub struct Location {
     pub latitude: String,
 }
 
-pub struct Contract {}
+pub struct Contract {
+    pub version: u32,
+    pub state: ContractState,
+    pub contract_id: u64,
+    pub twin_id: u32,
+    pub contract_type: ContractData,
+    pub solution_provider_id: Option<u64>,
+}
+
+pub enum ContractState {
+    Created,
+    Deleted(Cause),
+    GracePeriod(u64),
+}
+
+pub enum Cause {
+    CanceledByUser,
+    OutOfFunds,
+}
+
+pub enum ContractData {
+    NodeContract(NodeContract),
+    NameContract(NameContract),
+    RentContract(RentContract),
+}
+
+pub struct NodeContract {
+    pub node_id: u32,
+    pub deployment_hash: Hash,
+    pub deployment_data: Vec<u8>,
+    pub public_ips: u32,
+    pub public_ips_list: Vec<PublicIP>,
+}
+
+pub struct NameContract {
+    pub name: String,
+}
+
+pub struct RentContract {
+    pub node_id: u32,
+}
 
 pub struct PublicConfig {
     pub ip4: PubIPConfig,
@@ -103,7 +145,10 @@ pub struct PubIPConfig {
 
 pub struct Domain(pub String);
 
-pub struct ContractResources {}
+pub struct ContractResources {
+    pub contract_id: u64,
+    pub used: Resources,
+}
 
 pub struct EntityProof {
     pub entity_id: u32,

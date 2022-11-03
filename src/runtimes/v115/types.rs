@@ -1,5 +1,11 @@
 use super::runtime::api::runtime_types::{
     frame_support::storage::bounded_vec::BoundedVec,
+    pallet_smart_contract::types::{
+        Cause as RuntimeCause, Contract as RuntimeContract, ContractData as RuntimeContractData,
+        ContractResources as RuntimeContractResources, ContractState as RuntimeContractState,
+        NameContract as RuntimeNameContract, NodeContract as RuntimeNodeContract,
+        RentContract as RuntimeRentContract,
+    },
     pallet_tfgrid::{
         farm::FarmName as RuntimeFarmName,
         interface::{
@@ -26,8 +32,10 @@ use super::runtime::api::runtime_types::{
     },
 };
 use crate::types::{
-    Domain, EntityProof, Farm, FarmCertification, FarmPolicy, FarmingPolicyLimit, Interface,
-    Location, Node, NodeCertification, PubIPConfig, PublicConfig, PublicIP, Resources, Twin,
+    Cause, Contract, ContractData, ContractResources, ContractState, Domain, EntityProof, Farm,
+    FarmCertification, FarmPolicy, FarmingPolicyLimit, Interface, Location, NameContract, Node,
+    NodeCertification, NodeContract, PubIPConfig, PublicConfig, PublicIP, RentContract, Resources,
+    Twin,
 };
 use subxt::ext::sp_runtime::AccountId32;
 
@@ -370,6 +378,106 @@ impl
                 // SAFETY: Chain ensures this is a valid ASCII string.
                 .map(|ip| unsafe { String::from_utf8_unchecked(ip.0 .0) })
                 .collect(),
+        }
+    }
+}
+
+impl From<RuntimeContract> for Contract {
+    fn from(rc: RuntimeContract) -> Self {
+        let RuntimeContract {
+            version,
+            state,
+            contract_id,
+            twin_id,
+            contract_type,
+            solution_provider_id,
+        } = rc;
+        Contract {
+            version,
+            state: state.into(),
+            contract_id,
+            twin_id,
+            contract_type: contract_type.into(),
+            solution_provider_id,
+        }
+    }
+}
+
+impl From<RuntimeContractState> for ContractState {
+    fn from(rcs: RuntimeContractState) -> Self {
+        match rcs {
+            RuntimeContractState::Created => ContractState::Created,
+            RuntimeContractState::Deleted(cause) => ContractState::Deleted(cause.into()),
+            RuntimeContractState::GracePeriod(gp) => ContractState::GracePeriod(gp),
+        }
+    }
+}
+
+impl From<RuntimeCause> for Cause {
+    fn from(rc: RuntimeCause) -> Self {
+        match rc {
+            RuntimeCause::OutOfFunds => Cause::OutOfFunds,
+            RuntimeCause::CanceledByUser => Cause::CanceledByUser,
+        }
+    }
+}
+
+impl From<RuntimeContractData> for ContractData {
+    fn from(rcd: RuntimeContractData) -> Self {
+        match rcd {
+            RuntimeContractData::NodeContract(nc) => ContractData::NodeContract(nc.into()),
+            RuntimeContractData::NameContract(nc) => ContractData::NameContract(nc.into()),
+            RuntimeContractData::RentContract(rc) => ContractData::RentContract(rc.into()),
+        }
+    }
+}
+
+impl From<RuntimeNodeContract> for NodeContract {
+    fn from(rnc: RuntimeNodeContract) -> Self {
+        let RuntimeNodeContract {
+            node_id,
+            deployment_hash,
+            deployment_data,
+            public_ips,
+            public_ips_list,
+        } = rnc;
+        NodeContract {
+            node_id,
+            deployment_hash,
+            deployment_data: deployment_data.0,
+            public_ips,
+            public_ips_list: public_ips_list
+                .0
+                .into_iter()
+                .map(|pip| pip.into())
+                .collect(),
+        }
+    }
+}
+
+impl From<RuntimeNameContract> for NameContract {
+    fn from(rnc: RuntimeNameContract) -> Self {
+        let RuntimeNameContract { name } = rnc;
+        NameContract {
+            // SAFETY: Chain ensures this is a valid ASCII string.
+            name: unsafe { String::from_utf8_unchecked(name.0 .0) },
+        }
+    }
+}
+
+impl From<RuntimeRentContract> for RentContract {
+    fn from(rrc: RuntimeRentContract) -> Self {
+        let RuntimeRentContract { node_id } = rrc;
+        RentContract { node_id }
+    }
+}
+
+impl From<RuntimeContractResources> for ContractResources {
+    fn from(rcr: RuntimeContractResources) -> Self {
+        let RuntimeContractResources { contract_id, used } = rcr;
+        ContractResources {
+            contract_id,
+            used: used.into(),
         }
     }
 }

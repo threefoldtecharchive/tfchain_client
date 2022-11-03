@@ -128,7 +128,17 @@ impl RuntimeClient for Client {
         id: u64,
         block: Option<Hash>,
     ) -> Result<Option<Contract>, Box<dyn std::error::Error>> {
-        todo!()
+        Ok(self
+            .api
+            .storage()
+            .fetch(
+                &runtime::api::storage()
+                    .smart_contract_module()
+                    .contracts(id),
+                block,
+            )
+            .await?
+            .map(|c| c.into()))
     }
 
     /// Get the resources of the contract referenced by this ID.
@@ -137,7 +147,17 @@ impl RuntimeClient for Client {
         id: u64,
         block: Option<Hash>,
     ) -> Result<Option<ContractResources>, Box<dyn std::error::Error>> {
-        todo!()
+        Ok(self
+            .api
+            .storage()
+            .fetch(
+                &runtime::api::storage()
+                    .smart_contract_module()
+                    .node_contract_resources(id),
+                block,
+            )
+            .await?
+            .map(|cr| cr.into()))
     }
 
     /// Get the amount of contracts on the grid.
