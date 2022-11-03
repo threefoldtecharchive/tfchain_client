@@ -73,23 +73,43 @@ impl RuntimeClient for Client {
     }
 
     /// Get the farm referenced by this ID.
-    async fn farm(&self, id: u32, block: Option<Hash>) -> Result<Farm, Box<dyn std::error::Error>> {
+    async fn farm(
+        &self,
+        id: u32,
+        block: Option<Hash>,
+    ) -> Result<Option<Farm>, Box<dyn std::error::Error>> {
         todo!()
     }
 
     /// Get the amount of farms on the grid.
     async fn farm_count(&self, block: Option<Hash>) -> Result<u32, Box<dyn std::error::Error>> {
-        todo!()
+        Ok(self
+            .api
+            .storage()
+            .fetch(&runtime::api::storage().tfgrid_module().farm_id(), block)
+            .await?
+            // SAFETY: This value is initialized in genesis and always set.
+            .unwrap())
     }
 
     /// Get the node referenced by this ID.
-    async fn node(&self, id: u32, block: Option<Hash>) -> Result<Node, Box<dyn std::error::Error>> {
+    async fn node(
+        &self,
+        id: u32,
+        block: Option<Hash>,
+    ) -> Result<Option<Node>, Box<dyn std::error::Error>> {
         todo!()
     }
 
     /// Get the amount of nodes on the grid.
     async fn node_count(&self, block: Option<Hash>) -> Result<u32, Box<dyn std::error::Error>> {
-        todo!()
+        Ok(self
+            .api
+            .storage()
+            .fetch(&runtime::api::storage().tfgrid_module().node_id(), block)
+            .await?
+            // SAFETY: This value is initialized in genesis and always set.
+            .unwrap())
     }
 
     /// Get the contract referenced by this ID.
@@ -97,7 +117,7 @@ impl RuntimeClient for Client {
         &self,
         id: u64,
         block: Option<Hash>,
-    ) -> Result<Contract, Box<dyn std::error::Error>> {
+    ) -> Result<Option<Contract>, Box<dyn std::error::Error>> {
         todo!()
     }
 
@@ -106,13 +126,24 @@ impl RuntimeClient for Client {
         &self,
         id: u64,
         block: Option<Hash>,
-    ) -> Result<ContractResources, Box<dyn std::error::Error>> {
+    ) -> Result<Option<ContractResources>, Box<dyn std::error::Error>> {
         todo!()
     }
 
     /// Get the amount of contracts on the grid.
     async fn contract_count(&self, block: Option<Hash>) -> Result<u64, Box<dyn std::error::Error>> {
-        todo!()
+        Ok(self
+            .api
+            .storage()
+            .fetch(
+                &runtime::api::storage()
+                    .smart_contract_module()
+                    .contract_id(),
+                block,
+            )
+            .await?
+            // SAFETY: This value is initialized in genesis and always set.
+            .unwrap())
     }
 
     /// Get the farming policy referenced by this ID.
@@ -120,7 +151,7 @@ impl RuntimeClient for Client {
         &self,
         id: u32,
         block: Option<Hash>,
-    ) -> Result<FarmPolicy, Box<dyn std::error::Error>> {
+    ) -> Result<Option<FarmPolicy>, Box<dyn std::error::Error>> {
         todo!()
     }
 
@@ -129,6 +160,15 @@ impl RuntimeClient for Client {
         &self,
         block: Option<Hash>,
     ) -> Result<u32, Box<dyn std::error::Error>> {
-        todo!()
+        Ok(self
+            .api
+            .storage()
+            .fetch(
+                &runtime::api::storage().tfgrid_module().farming_policy_id(),
+                block,
+            )
+            .await?
+            // SAFETY: This value is initialized in genesis and always set.
+            .unwrap())
     }
 }

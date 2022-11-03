@@ -51,13 +51,21 @@ pub trait RuntimeClient {
     async fn twin_count(&self, block: Option<Hash>) -> Result<u32, Box<dyn std::error::Error>>;
 
     /// Get the farm referenced by this ID.
-    async fn farm(&self, id: u32, block: Option<Hash>) -> Result<Farm, Box<dyn std::error::Error>>;
+    async fn farm(
+        &self,
+        id: u32,
+        block: Option<Hash>,
+    ) -> Result<Option<Farm>, Box<dyn std::error::Error>>;
 
     /// Get the amount of farms on the grid.
     async fn farm_count(&self, block: Option<Hash>) -> Result<u32, Box<dyn std::error::Error>>;
 
     /// Get the node referenced by this ID.
-    async fn node(&self, id: u32, block: Option<Hash>) -> Result<Node, Box<dyn std::error::Error>>;
+    async fn node(
+        &self,
+        id: u32,
+        block: Option<Hash>,
+    ) -> Result<Option<Node>, Box<dyn std::error::Error>>;
 
     /// Get the amount of nodes on the grid.
     async fn node_count(&self, block: Option<Hash>) -> Result<u32, Box<dyn std::error::Error>>;
@@ -67,14 +75,14 @@ pub trait RuntimeClient {
         &self,
         id: u64,
         block: Option<Hash>,
-    ) -> Result<Contract, Box<dyn std::error::Error>>;
+    ) -> Result<Option<Contract>, Box<dyn std::error::Error>>;
 
     /// Get the resources of the contract referenced by this ID.
     async fn contract_resources(
         &self,
         id: u64,
         block: Option<Hash>,
-    ) -> Result<ContractResources, Box<dyn std::error::Error>>;
+    ) -> Result<Option<ContractResources>, Box<dyn std::error::Error>>;
 
     /// Get the amount of contracts on the grid.
     async fn contract_count(&self, block: Option<Hash>) -> Result<u64, Box<dyn std::error::Error>>;
@@ -84,7 +92,7 @@ pub trait RuntimeClient {
         &self,
         id: u32,
         block: Option<Hash>,
-    ) -> Result<FarmPolicy, Box<dyn std::error::Error>>;
+    ) -> Result<Option<FarmPolicy>, Box<dyn std::error::Error>>;
 
     /// Get the amount of farming policies on the grid.
     async fn farming_policy_count(
