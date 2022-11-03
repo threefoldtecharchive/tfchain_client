@@ -83,7 +83,7 @@ impl RuntimeClient for Client {
             .storage()
             .fetch(&runtime::api::storage().tfgrid_module().farms(id), block)
             .await?
-            .map(|t| t.into()))
+            .map(|f| f.into()))
     }
 
     /// Get the amount of farms on the grid.
@@ -103,7 +103,12 @@ impl RuntimeClient for Client {
         id: u32,
         block: Option<Hash>,
     ) -> Result<Option<Node>, Box<dyn std::error::Error>> {
-        todo!()
+        Ok(self
+            .api
+            .storage()
+            .fetch(&runtime::api::storage().tfgrid_module().nodes(id), block)
+            .await?
+            .map(|n| n.into()))
     }
 
     /// Get the amount of nodes on the grid.
@@ -157,7 +162,17 @@ impl RuntimeClient for Client {
         id: u32,
         block: Option<Hash>,
     ) -> Result<Option<FarmPolicy>, Box<dyn std::error::Error>> {
-        todo!()
+        Ok(self
+            .api
+            .storage()
+            .fetch(
+                &runtime::api::storage()
+                    .tfgrid_module()
+                    .farming_policies_map(id),
+                block,
+            )
+            .await?
+            .map(|fp| fp.into()))
     }
 
     /// Get the amount of farming policies on the grid.

@@ -1,16 +1,34 @@
 use super::runtime::api::runtime_types::{
+    frame_support::storage::bounded_vec::BoundedVec,
     pallet_tfgrid::{
         farm::FarmName as RuntimeFarmName,
+        interface::{
+            InterfaceIp as RuntimeInterfaceIp, InterfaceMac as RuntimeInterfaceMac,
+            InterfaceName as RuntimeInterfaceName,
+        },
+        pub_config::{
+            Domain as RuntimeDomain, GW4 as RuntimeGW4, GW6 as RuntimeGW6, IP4 as RuntimeIP4,
+            IP6 as RuntimeIP6,
+        },
         pub_ip::{GatewayIP as RuntimeGatewayIP, PublicIP as RuntimePublicIP},
         twin::TwinIp as RuntimeTwinIP,
-        types::{EntityProof as RuntimeEntityProof, Twin as RuntimeTwin},
+        types::{
+            EntityProof as RuntimeEntityProof, FarmingPolicy as RuntimeFarmingPolicy,
+            Twin as RuntimeTwin,
+        },
     },
     tfchain_support::types::{
         Farm as RuntimeFarm, FarmCertification as RuntimeFarmCertification,
-        FarmingPolicyLimit as RuntimeFarmingPolicyLimit, PublicIP as RuntimePublicIPGroup,
+        FarmingPolicyLimit as RuntimeFarmingPolicyLimit, Interface as RuntimeInterface,
+        Location as RuntimeLocation, Node as RuntimeNode,
+        NodeCertification as RuntimeNodeCertification, PublicConfig as RuntimePublicConfig,
+        PublicIP as RuntimePublicIPGroup, Resources as RuntimeResources, IP as RuntimeIP,
     },
 };
-use crate::types::{EntityProof, Farm, FarmCertification, FarmingPolicyLimit, PublicIP, Twin};
+use crate::types::{
+    Domain, EntityProof, Farm, FarmCertification, FarmPolicy, FarmingPolicyLimit, Interface,
+    Location, Node, NodeCertification, PubIPConfig, PublicConfig, PublicIP, Resources, Twin,
+};
 use subxt::ext::sp_runtime::AccountId32;
 
 impl From<RuntimeTwin<RuntimeTwinIP, AccountId32>> for Twin {
@@ -124,6 +142,234 @@ impl From<RuntimePublicIPGroup<RuntimePublicIP, RuntimeGatewayIP>> for PublicIP 
             // SAFETY: Chain ensures all IP's are validly formatted ASCII strings.
             gateway: unsafe { String::from_utf8_unchecked(gateway.0 .0) },
             contract_id,
+        }
+    }
+}
+
+impl From<RuntimeFarmingPolicy<u32>> for FarmPolicy {
+    fn from(rfp: RuntimeFarmingPolicy<u32>) -> Self {
+        let RuntimeFarmingPolicy {
+            version,
+            id,
+            name,
+            cu,
+            su,
+            nu,
+            ipv4,
+            minimal_uptime,
+            policy_created,
+            policy_end,
+            immutable,
+            default,
+            node_certification,
+            farm_certification,
+        } = rfp;
+        FarmPolicy {
+            version,
+            id,
+            // SAFETY: Chain ensures this can only be valid ASCII.
+            name: unsafe { String::from_utf8_unchecked(name) },
+            cu,
+            su,
+            nu,
+            ipv4,
+            minimal_uptime,
+            policy_created,
+            policy_end,
+            immutable,
+            default,
+            node_certification: node_certification.into(),
+            farm_certification: farm_certification.into(),
+        }
+    }
+}
+
+impl From<RuntimeNodeCertification> for NodeCertification {
+    fn from(rnc: RuntimeNodeCertification) -> Self {
+        match rnc {
+            RuntimeNodeCertification::Certified => NodeCertification::Certified,
+            RuntimeNodeCertification::Diy => NodeCertification::Diy,
+        }
+    }
+}
+
+impl
+    From<
+        RuntimeNode<
+            RuntimePublicConfig<
+                RuntimeIP<RuntimeIP4, RuntimeGW4>,
+                Option<RuntimeIP<RuntimeIP6, RuntimeGW6>>,
+                Option<RuntimeDomain>,
+            >,
+            RuntimeInterface<
+                RuntimeInterfaceName,
+                RuntimeInterfaceMac,
+                BoundedVec<RuntimeInterfaceIp>,
+            >,
+        >,
+    > for Node
+{
+    fn from(
+        rn: RuntimeNode<
+            RuntimePublicConfig<
+                RuntimeIP<RuntimeIP4, RuntimeGW4>,
+                Option<RuntimeIP<RuntimeIP6, RuntimeGW6>>,
+                Option<RuntimeDomain>,
+            >,
+            RuntimeInterface<
+                RuntimeInterfaceName,
+                RuntimeInterfaceMac,
+                BoundedVec<RuntimeInterfaceIp>,
+            >,
+        >,
+    ) -> Self {
+        let RuntimeNode {
+            version,
+            id,
+            farm_id,
+            twin_id,
+            resources,
+            location,
+            country,
+            city,
+            public_config,
+            created,
+            farming_policy_id,
+            interfaces,
+            certification,
+            secure_boot,
+            virtualized,
+            serial_number,
+            connection_price,
+        } = rn;
+        Node {
+            version,
+            id,
+            farm_id,
+            twin_id,
+            resources: resources.into(),
+            location: location.into(),
+            // SAFETY: Chain ensures this is a valid ASCII string
+            country: unsafe { String::from_utf8_unchecked(country) },
+            // SAFETY: Chain ensures this is a valid ASCII string
+            city: unsafe { String::from_utf8_unchecked(city) },
+            public_config: public_config.map(|pc| pc.into()),
+            created,
+            farming_policy_id,
+            interfaces: interfaces.into_iter().map(|i| i.into()).collect(),
+            certification: certification.into(),
+            secure_boot,
+            virtualized,
+            // SAFETY: Chain esures this is a valid ASCII string
+            serial_number: unsafe { String::from_utf8_unchecked(serial_number) },
+            connection_price,
+        }
+    }
+}
+
+impl From<RuntimeLocation> for Location {
+    fn from(rl: RuntimeLocation) -> Self {
+        let RuntimeLocation {
+            longitude,
+            latitude,
+        } = rl;
+        Location {
+            // SAFETY: Chain ensures this is a valid ASCII string.
+            longitude: unsafe { String::from_utf8_unchecked(longitude) },
+            // SAFETY: Chain ensures this is a valid ASCII string.
+            latitude: unsafe { String::from_utf8_unchecked(latitude) },
+        }
+    }
+}
+
+impl From<RuntimeResources> for Resources {
+    fn from(rl: RuntimeResources) -> Self {
+        let RuntimeResources { hru, sru, cru, mru } = rl;
+        Resources { hru, sru, cru, mru }
+    }
+}
+
+impl
+    From<
+        RuntimePublicConfig<
+            RuntimeIP<RuntimeIP4, RuntimeGW4>,
+            Option<RuntimeIP<RuntimeIP6, RuntimeGW6>>,
+            Option<RuntimeDomain>,
+        >,
+    > for PublicConfig
+{
+    fn from(
+        rpc: RuntimePublicConfig<
+            RuntimeIP<RuntimeIP4, RuntimeGW4>,
+            Option<RuntimeIP<RuntimeIP6, RuntimeGW6>>,
+            Option<RuntimeDomain>,
+        >,
+    ) -> Self {
+        let RuntimePublicConfig { ip4, ip6, domain } = rpc;
+        PublicConfig {
+            ip4: ip4.into(),
+            ip6: ip6.map(|i| i.into()),
+            domain: domain.map(|d| d.into()),
+        }
+    }
+}
+
+impl From<RuntimeIP<RuntimeIP4, RuntimeGW4>> for PubIPConfig {
+    fn from(rip: RuntimeIP<RuntimeIP4, RuntimeGW4>) -> Self {
+        let RuntimeIP { ip, gw } = rip;
+        PubIPConfig {
+            // SAFETY: Chain ensures this is a valid ASCII string.
+            ip: unsafe { String::from_utf8_unchecked(ip.0 .0) },
+            // SAFETY: Chain ensures this is a valid ASCII string.
+            gw: unsafe { String::from_utf8_unchecked(gw.0 .0) },
+        }
+    }
+}
+
+impl From<RuntimeIP<RuntimeIP6, RuntimeGW6>> for PubIPConfig {
+    fn from(rip: RuntimeIP<RuntimeIP6, RuntimeGW6>) -> Self {
+        let RuntimeIP { ip, gw } = rip;
+        PubIPConfig {
+            // SAFETY: Chain ensures this is a valid ASCII string.
+            ip: unsafe { String::from_utf8_unchecked(ip.0 .0) },
+            // SAFETY: Chain ensures this is a valid ASCII string.
+            gw: unsafe { String::from_utf8_unchecked(gw.0 .0) },
+        }
+    }
+}
+
+impl From<RuntimeDomain> for Domain {
+    fn from(rd: RuntimeDomain) -> Self {
+        let RuntimeDomain(d) = rd;
+        // SAFETY: Chain ensures this is a valid ASCII string.
+        Domain(unsafe { String::from_utf8_unchecked(d.0) })
+    }
+}
+
+impl
+    From<
+        RuntimeInterface<RuntimeInterfaceName, RuntimeInterfaceMac, BoundedVec<RuntimeInterfaceIp>>,
+    > for Interface
+{
+    fn from(
+        ri: RuntimeInterface<
+            RuntimeInterfaceName,
+            RuntimeInterfaceMac,
+            BoundedVec<RuntimeInterfaceIp>,
+        >,
+    ) -> Self {
+        let RuntimeInterface { name, mac, ips } = ri;
+        Interface {
+            // SAFETY: Chain ensures this is a valid ASCII string.
+            name: unsafe { String::from_utf8_unchecked(name.0 .0) },
+            // SAFETY: Chain ensures this is a valid ASCII string.
+            mac: unsafe { String::from_utf8_unchecked(mac.0 .0) },
+            ips: ips
+                .0
+                .into_iter()
+                // SAFETY: Chain ensures this is a valid ASCII string.
+                .map(|ip| unsafe { String::from_utf8_unchecked(ip.0 .0) })
+                .collect(),
         }
     }
 }
