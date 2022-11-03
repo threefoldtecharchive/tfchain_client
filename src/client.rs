@@ -54,6 +54,13 @@ pub trait RuntimeClient {
         block: Option<Hash>,
     ) -> Result<Option<Farm>, Box<dyn std::error::Error>>;
 
+    /// Get the payout address of the farm referenced by this ID.
+    async fn farm_payout_address(
+        &self,
+        id: u32,
+        block: Option<Hash>,
+    ) -> Result<Option<String>, Box<dyn std::error::Error>>;
+
     /// Get the amount of farms on the grid.
     async fn farm_count(&self, block: Option<Hash>) -> Result<u32, Box<dyn std::error::Error>>;
 

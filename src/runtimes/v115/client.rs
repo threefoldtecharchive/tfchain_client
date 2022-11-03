@@ -93,6 +93,26 @@ impl RuntimeClient for Client {
             .map(|f| f.into()))
     }
 
+    /// Get the payout address of the farm referenced by this ID.
+    async fn farm_payout_address(
+        &self,
+        id: u32,
+        block: Option<Hash>,
+    ) -> Result<Option<String>, Box<dyn std::error::Error>> {
+        Ok(self
+            .api
+            .storage()
+            .fetch(
+                &runtime::api::storage()
+                    .tfgrid_module()
+                    .farm_payout_v2_address_by_farm_id(id),
+                block,
+            )
+            .await?
+            // SAFETY: This should be checked on chain, though not sure. Panic if it is not
+            .map(|f| String::from_utf8(f).unwrap()))
+    }
+
     /// Get the amount of farms on the grid.
     async fn farm_count(&self, block: Option<Hash>) -> Result<u32, Box<dyn std::error::Error>> {
         Ok(self
