@@ -1,13 +1,21 @@
 use crate::client::RuntimeClient;
 use crate::runtimes::{
     v115::types::{
-        V115Contract, V115ContractResources, V115Farm, V115FarmingPolicy, V115Node, V115Twin,
+        V115Contract, V115ContractCreatedEvent, V115ContractNruConsumptionReceivedEvent,
+        V115ContractResources, V115ContractUpdatedResourcesEvent, V115Farm, V115FarmingPolicy,
+        V115Node, V115NodeStoredEvent, V115NodeUpdatedEvent, V115NodeUptimeReportedEvent, V115Twin,
     },
     v123::types::{
-        V123Contract, V123ContractResources, V123Farm, V123FarmingPolicy, V123Node, V123Twin,
+        V123Contract, V123ContractCreatedEvent, V123ContractNruConsumptionReceivedEvent,
+        V123ContractResources, V123ContractUpdatedResourcesEvent, V123Farm, V123FarmingPolicy,
+        V123Node, V123NodeStoredEvent, V123NodeUpdatedEvent, V123NodeUptimeReportedEvent, V123Twin,
     },
 };
-use crate::types::{Contract, ContractResources, Farm, FarmPolicy, Hash, Node, Twin};
+use crate::types::{
+    Contract, ContractResources, Farm, FarmPolicy, Hash, Node, RuntimeEvents, Twin, NODE_STORED,
+    NODE_UPDATED, NODE_UPTIME_REPORTED, NRU_CONSUMPTION_RECEIVED, SMART_CONTRACT_MODULE,
+    TFGRID_MODULE,
+};
 use subxt::storage::DynamicStorageAddress;
 use subxt::{
     dynamic::Value,
@@ -36,21 +44,128 @@ impl DynamicClient {
 #[async_trait::async_trait]
 impl RuntimeClient for DynamicClient {
     /// Get all events in a block.
-    // async fn events(
-    //     &self,
-    //     block: Option<Hash>,
-    // ) -> Result<Events<PolkadotConfig>, Box<dyn std::error::Error>> {
-    //     let storage_address = subxt::dynamic::storage("System", "Events", vec![Value::from(block)]);
-    //     let events = self
-    //         .api
-    //         .storage()
-    //         .at(block)
-    //         .await?
-    //         .fetch_or_default(&storage_address)
-    //         .await?
-    //         .to_value()?;
-    //     Ok(events.try_into().unwrap())
-    // }
+    async fn events(
+        &self,
+        block: Option<Hash>,
+    ) -> Result<Vec<RuntimeEvents>, Box<dyn std::error::Error>> {
+        let block = self.api.blocks().at(block).await?;
+
+        let mut events: Vec<RuntimeEvents> = vec![];
+        for event in block.events().await?.iter() {
+            let evt = event?;
+
+            match (evt.pallet_name(), evt.variant_name()) {
+                (TFGRID_MODULE, NODE_STORED) => {
+                    if evt.as_event::<V115NodeStoredEvent>().is_ok() {
+                        let node = evt
+                            .as_event::<V115NodeStoredEvent>()
+                            .unwrap()
+                            .unwrap()
+                            .0
+                            .into();
+                        events.push(RuntimeEvents::NodeStoredEvent(node))
+                    } else if evt.as_event::<V123NodeStoredEvent>().is_ok() {
+                        let node = evt
+                            .as_event::<V123NodeStoredEvent>()
+                            .unwrap()
+                            .unwrap()
+                            .0
+                            .into();
+                        events.push(RuntimeEvents::NodeStoredEvent(node))
+                    }
+                }
+                (TFGRID_MODULE, NODE_UPDATED) => {
+                    if evt.as_event::<V115NodeUpdatedEvent>().is_ok() {
+                        let node = evt
+                            .as_event::<V115NodeUpdatedEvent>()
+                            .unwrap()
+                            .unwrap()
+                            .0
+                            .into();
+                        events.push(RuntimeEvents::NodeStoredEvent(node))
+                    } else if evt.as_event::<V123NodeUpdatedEvent>().is_ok() {
+                        let node = evt
+                            .as_event::<V123NodeUpdatedEvent>()
+                            .unwrap()
+                            .unwrap()
+                            .0
+                            .into();
+                        events.push(RuntimeEvents::NodeStoredEvent(node))
+                    }
+                }
+                (TFGRID_MODULE, NODE_UPTIME_REPORTED) => {
+                    if evt.as_event::<V115NodeUptimeReportedEvent>().is_ok() {
+                        let uptime = evt
+                            .as_event::<V115NodeUptimeReportedEvent>()
+                            .unwrap()
+                            .unwrap();
+                        events.push(RuntimeEvents::NodeUptimeReported(
+                            uptime.0, uptime.1, uptime.2,
+                        ))
+                    } else if evt.as_event::<V123NodeUptimeReportedEvent>().is_ok() {
+                        let uptime = evt
+                            .as_event::<V123NodeUptimeReportedEvent>()
+                            .unwrap()
+                            .unwrap();
+                        events.push(RuntimeEvents::NodeUptimeReported(
+                            uptime.0, uptime.1, uptime.2,
+                        ))
+                    }
+                }
+                (SMART_CONTRACT_MODULE, UPDATE_USED_RESOURCES) => {
+                    if evt.as_event::<V115ContractUpdatedResourcesEvent>().is_ok() {
+                        let contract_resources = evt
+                            .as_event::<V115ContractUpdatedResourcesEvent>()
+                            .unwrap()
+                            .unwrap();
+                        events.push(RuntimeEvents::ContractUsedResourcesUpdated(
+                            contract_resources.0.into(),
+                        ))
+                    } else if evt.as_event::<V123ContractUpdatedResourcesEvent>().is_ok() {
+                        let contract_resources = evt
+                            .as_event::<V123ContractUpdatedResourcesEvent>()
+                            .unwrap()
+                            .unwrap();
+                        events.push(RuntimeEvents::ContractUsedResourcesUpdated(
+                            contract_resources.0.into(),
+                        ))
+                    }
+                }
+                (SMART_CONTRACT_MODULE, NRU_CONSUMPTION_RECEIVED) => {
+                    if evt
+                        .as_event::<V115ContractNruConsumptionReceivedEvent>()
+                        .is_ok()
+                    {
+                        let nru = evt
+                            .as_event::<V115ContractNruConsumptionReceivedEvent>()
+                            .unwrap()
+                            .unwrap();
+                        events.push(RuntimeEvents::NruConsumptionReceived(nru.0.into()))
+                    } else if evt
+                        .as_event::<V123ContractNruConsumptionReceivedEvent>()
+                        .is_ok()
+                    {
+                        let nru = evt
+                            .as_event::<V123ContractNruConsumptionReceivedEvent>()
+                            .unwrap()
+                            .unwrap();
+                        events.push(RuntimeEvents::NruConsumptionReceived(nru.0.into()))
+                    }
+                }
+                (SMART_CONTRACT_MODULE, CONTRACT_CREATED) => {
+                    if evt.as_event::<V115ContractCreatedEvent>().is_ok() {
+                        let contract = evt.as_event::<V115ContractCreatedEvent>().unwrap().unwrap();
+                        events.push(RuntimeEvents::ContractCreated(contract.0.into()))
+                    } else if evt.as_event::<V123ContractCreatedEvent>().is_ok() {
+                        let contract = evt.as_event::<V123ContractCreatedEvent>().unwrap().unwrap();
+                        events.push(RuntimeEvents::ContractCreated(contract.0.into()))
+                    }
+                }
+                (_m, _e) => (),
+            }
+        }
+        Ok(events)
+    }
 
     /// Get the hash of a block at the given height. Note that in this case, block is actually the
     /// height rather than the hash to query at.
@@ -88,7 +203,7 @@ impl RuntimeClient for DynamicClient {
         block: Option<Hash>,
     ) -> Result<Option<Twin>, Box<dyn std::error::Error>> {
         let storage_address =
-            subxt::dynamic::storage("TfgridModule", "Twins", vec![Value::u128(id.into())]);
+            subxt::dynamic::storage(TFGRID_MODULE, "Twins", vec![Value::u128(id.into())]);
         let result = self
             .api
             .storage()
@@ -111,7 +226,7 @@ impl RuntimeClient for DynamicClient {
     /// Get the amount of twins on the grid.
     async fn twin_count(&self, block: Option<Hash>) -> Result<u32, Box<dyn std::error::Error>> {
         let storage_address: DynamicStorageAddress<Value> =
-            subxt::dynamic::storage("TfgridModule", "TwinID", vec![]);
+            subxt::dynamic::storage(TFGRID_MODULE, "TwinID", vec![]);
         let result = self
             .api
             .storage()
@@ -131,7 +246,7 @@ impl RuntimeClient for DynamicClient {
         block: Option<Hash>,
     ) -> Result<Option<Farm>, Box<dyn std::error::Error>> {
         let storage_address =
-            subxt::dynamic::storage("TfgridModule", "Farms", vec![Value::u128(id.into())]);
+            subxt::dynamic::storage(TFGRID_MODULE, "Farms", vec![Value::u128(id.into())]);
         let result = self
             .api
             .storage()
@@ -158,7 +273,7 @@ impl RuntimeClient for DynamicClient {
         block: Option<Hash>,
     ) -> Result<Option<String>, Box<dyn std::error::Error>> {
         let storage_address = subxt::dynamic::storage(
-            "TfgridModule",
+            TFGRID_MODULE,
             "FarmPayoutV2AddressByFarmID",
             vec![Value::u128(id.into())],
         );
@@ -177,7 +292,7 @@ impl RuntimeClient for DynamicClient {
     /// Get the amount of farms on the grid.
     async fn farm_count(&self, block: Option<Hash>) -> Result<u32, Box<dyn std::error::Error>> {
         let storage_address: DynamicStorageAddress<Value> =
-            subxt::dynamic::storage("TfgridModule", "FarmID", vec![]);
+            subxt::dynamic::storage(TFGRID_MODULE, "FarmID", vec![]);
         let result = self
             .api
             .storage()
@@ -197,7 +312,7 @@ impl RuntimeClient for DynamicClient {
         block: Option<Hash>,
     ) -> Result<Option<Node>, Box<dyn std::error::Error>> {
         let storage_address =
-            subxt::dynamic::storage("TfgridModule", "Nodes", vec![Value::u128(id.into())]);
+            subxt::dynamic::storage(TFGRID_MODULE, "Nodes", vec![Value::u128(id.into())]);
         let result = self
             .api
             .storage()
@@ -220,7 +335,7 @@ impl RuntimeClient for DynamicClient {
     /// Get the amount of nodes on the grid.
     async fn node_count(&self, block: Option<Hash>) -> Result<u32, Box<dyn std::error::Error>> {
         let storage_address: DynamicStorageAddress<Value> =
-            subxt::dynamic::storage("TfgridModule", "NodeID", vec![]);
+            subxt::dynamic::storage(TFGRID_MODULE, "NodeID", vec![]);
         let result = self
             .api
             .storage()
@@ -240,7 +355,7 @@ impl RuntimeClient for DynamicClient {
         block: Option<Hash>,
     ) -> Result<Option<Contract>, Box<dyn std::error::Error>> {
         let storage_address = subxt::dynamic::storage(
-            "SmartContractModule",
+            SMART_CONTRACT_MODULE,
             "Contracts",
             vec![Value::u128(id.into())],
         );
@@ -270,7 +385,7 @@ impl RuntimeClient for DynamicClient {
         block: Option<Hash>,
     ) -> Result<Option<ContractResources>, Box<dyn std::error::Error>> {
         let storage_address = subxt::dynamic::storage(
-            "SmartContractModule",
+            SMART_CONTRACT_MODULE,
             "NodeContractResources",
             vec![Value::u128(id.into())],
         );
@@ -296,7 +411,7 @@ impl RuntimeClient for DynamicClient {
     /// Get the amount of contracts on the grid.
     async fn contract_count(&self, block: Option<Hash>) -> Result<u64, Box<dyn std::error::Error>> {
         let storage_address: DynamicStorageAddress<Value> =
-            subxt::dynamic::storage("SmartContractModule", "ContractID", vec![]);
+            subxt::dynamic::storage(SMART_CONTRACT_MODULE, "ContractID", vec![]);
         let result = self
             .api
             .storage()
@@ -316,7 +431,7 @@ impl RuntimeClient for DynamicClient {
         block: Option<Hash>,
     ) -> Result<Option<FarmPolicy>, Box<dyn std::error::Error>> {
         let storage_address = subxt::dynamic::storage(
-            "TfgridModule",
+            TFGRID_MODULE,
             "FarmingPolicies",
             vec![Value::u128(id.into())],
         );
@@ -345,7 +460,7 @@ impl RuntimeClient for DynamicClient {
         block: Option<Hash>,
     ) -> Result<u32, Box<dyn std::error::Error>> {
         let storage_address: DynamicStorageAddress<Value> =
-            subxt::dynamic::storage("TfgridModule", "FarmingPolicyID", vec![]);
+            subxt::dynamic::storage(TFGRID_MODULE, "FarmingPolicyID", vec![]);
         let result = self
             .api
             .storage()

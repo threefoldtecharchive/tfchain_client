@@ -4,7 +4,7 @@ pub use super::runtime::api::runtime_types::{
         Cause as RuntimeCause, Contract as RuntimeContract, ContractData as RuntimeContractData,
         ContractResources as RuntimeContractResources, ContractState as RuntimeContractState,
         NameContract as RuntimeNameContract, NodeContract as RuntimeNodeContract,
-        RentContract as RuntimeRentContract,
+        NruConsumption as RuntimeNruResources, RentContract as RuntimeRentContract,
     },
     pallet_tfgrid::{
         farm::FarmName as RuntimeFarmName,
@@ -34,8 +34,8 @@ pub use super::runtime::api::runtime_types::{
 use crate::types::{
     Cause, Contract, ContractData, ContractResources, ContractState, Domain, EntityProof, Farm,
     FarmCertification, FarmPolicy, FarmingPolicyLimit, Interface, Location, NameContract, Node,
-    NodeCertification, NodeContract, PubIPConfig, PublicConfig, PublicIP, RentContract, Resources,
-    Twin,
+    NodeCertification, NodeContract, NruConsumption, PubIPConfig, PublicConfig, PublicIP,
+    RentContract, Resources, Twin,
 };
 use subxt::utils::AccountId32;
 
@@ -53,6 +53,17 @@ pub type V115Node = RuntimeNode<
 pub type V115Contract = RuntimeContract;
 pub type V115ContractResources = RuntimeContractResources;
 pub type V115FarmingPolicy = RuntimeFarmingPolicy<u32>;
+
+pub type V115NodeStoredEvent = super::runtime::api::tfgrid_module::events::NodeStored;
+pub type V115NodeUpdatedEvent = super::runtime::api::tfgrid_module::events::NodeUpdated;
+pub type V115NodeUptimeReportedEvent =
+    super::runtime::api::tfgrid_module::events::NodeUptimeReported;
+pub type V115ContractCreatedEvent =
+    super::runtime::api::smart_contract_module::events::ContractCreated;
+pub type V115ContractUpdatedResourcesEvent =
+    super::runtime::api::smart_contract_module::events::UpdatedUsedResources;
+pub type V115ContractNruConsumptionReceivedEvent =
+    super::runtime::api::smart_contract_module::events::NruConsumptionReportReceived;
 
 impl From<RuntimeTwin<RuntimeTwinIP, AccountId32>> for Twin {
     fn from(rt: RuntimeTwin<RuntimeTwinIP, AccountId32>) -> Self {
@@ -493,6 +504,23 @@ impl From<RuntimeContractResources> for ContractResources {
         ContractResources {
             contract_id,
             used: used.into(),
+        }
+    }
+}
+
+impl From<RuntimeNruResources> for NruConsumption {
+    fn from(rcr: RuntimeNruResources) -> Self {
+        let RuntimeNruResources {
+            contract_id,
+            timestamp,
+            window,
+            nru,
+        } = rcr;
+        NruConsumption {
+            contract_id,
+            timestamp,
+            window,
+            nru,
         }
     }
 }

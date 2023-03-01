@@ -1,7 +1,9 @@
 pub use subxt::events::Events;
 pub use subxt::PolkadotConfig;
 
-use crate::types::{Contract, ContractResources, Farm, FarmPolicy, Hash, Node, Twin};
+use crate::types::{
+    Contract, ContractResources, Farm, FarmPolicy, Hash, Node, RuntimeEvents, Twin,
+};
 
 /// The expected amount of seconds per block.
 const BLOCK_TIME_SECONDS: i64 = 6;
@@ -22,10 +24,10 @@ const BLOCK_TIME_SECONDS: i64 = 6;
 #[async_trait::async_trait]
 pub trait RuntimeClient {
     /// Get all events in a block.
-    // async fn events(
-    //     &self,
-    //     block: Option<Hash>,
-    // ) -> Result<Events<PolkadotConfig>, Box<dyn std::error::Error>>;
+    async fn events(
+        &self,
+        block: Option<Hash>,
+    ) -> Result<Vec<RuntimeEvents>, Box<dyn std::error::Error>>;
 
     /// Get the hash of a block at the given height. Note that in this case, block is actually the
     /// height rather than the hash to query at.

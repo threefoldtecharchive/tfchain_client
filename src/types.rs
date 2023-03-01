@@ -8,6 +8,16 @@ pub type PublicKey = [u8; 32];
 pub type Signature = [u8; 64];
 pub type BlockNumber = subxt::rpc::types::BlockNumber;
 
+pub const TFGRID_MODULE: &str = "TfgridModule";
+pub const NODE_STORED: &str = "NodeStored";
+pub const NODE_UPDATED: &str = "NodeUpdated";
+pub const NODE_UPTIME_REPORTED: &str = "NodeUptimeReported";
+pub const SMART_CONTRACT_MODULE: &str = "SmartContractModule";
+pub const UPDATE_USED_RESOURCES: &str = "UpdatedUsedResources";
+pub const NRU_CONSUMPTION_RECEIVED: &str = "NruConsumptionReportReceived";
+pub const CONTRACT_CREATED: &str = "ContractCreated";
+pub const NODE_CONTRACT_CANCELLED: &str = "NodeContractCanceled";
+
 pub struct Twin {
     pub version: u32,
     pub id: u32,
@@ -184,4 +194,19 @@ pub struct FarmPolicy {
 pub enum NodeCertification {
     Certified,
     Diy,
+}
+pub struct NruConsumption {
+    pub contract_id: u64,
+    pub timestamp: u64,
+    pub window: u64,
+    pub nru: u64,
+}
+
+pub enum RuntimeEvents {
+    NodeStoredEvent(Node),
+    NodeUpdatedEvent(Node),
+    NodeUptimeReported(u32, u64, u64),
+    ContractCreated(Contract),
+    ContractUsedResourcesUpdated(ContractResources),
+    NruConsumptionReceived(NruConsumption),
 }
