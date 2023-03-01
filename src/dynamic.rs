@@ -12,9 +12,9 @@ use crate::runtimes::{
     },
 };
 use crate::types::{
-    Contract, ContractResources, Farm, FarmPolicy, Hash, Node, RuntimeEvents, Twin, NODE_STORED,
-    NODE_UPDATED, NODE_UPTIME_REPORTED, NRU_CONSUMPTION_RECEIVED, SMART_CONTRACT_MODULE,
-    TFGRID_MODULE,
+    Contract, ContractResources, Farm, FarmPolicy, Hash, Node, RuntimeEvents, Twin,
+    CONTRACT_CREATED, NODE_STORED, NODE_UPDATED, NODE_UPTIME_REPORTED, NRU_CONSUMPTION_RECEIVED,
+    SMART_CONTRACT_MODULE, TFGRID_MODULE, UPDATE_USED_RESOURCES,
 };
 use subxt::storage::DynamicStorageAddress;
 use subxt::{
