@@ -4,7 +4,7 @@ pub use subxt::PolkadotConfig;
 use crate::types::{Contract, ContractResources, Farm, FarmPolicy, Hash, Node, Twin};
 
 /// The expected amount of seconds per block.
-const BLOCK_TIME_SECONDS: u64 = 6;
+const BLOCK_TIME_SECONDS: i64 = 6;
 
 /// This is the general set of methods which are available on the individual runtime libraries. In
 /// general, methods and types here will adhere to the latest format on the grid, as to have all
@@ -111,9 +111,9 @@ pub trait RuntimeClient {
 /// therefore consistent across multiple chain versions.
 pub async fn height_at_timestamp(
     client: &dyn RuntimeClient,
-    ts: u64,
+    ts: i64,
 ) -> Result<u32, Box<dyn std::error::Error>> {
-    let latest_ts = client.timestamp(None).await? / 1000;
+    let latest_ts = (client.timestamp(None).await? / 1000) as i64;
     if latest_ts < ts {
         panic!(
             "can't fetch block for future timestamp {} vs latest {}",
@@ -130,7 +130,7 @@ pub async fn height_at_timestamp(
                 continue;
             }
         };
-        let block_time = client.timestamp(Some(hash)).await? / 1000;
+        let block_time = (client.timestamp(Some(hash)).await? / 1000) as i64;
         let time_delta = ts - block_time;
         let block_delta = time_delta / BLOCK_TIME_SECONDS;
         if block_delta == 0 {
@@ -140,7 +140,7 @@ pub async fn height_at_timestamp(
                 return Ok(height);
             }
         }
-        if (height as u64 + block_delta) < 0 {
+        if (height as i64 + block_delta) < 0 {
             panic!(
                 "negative height search (height {} delta {})",
                 height, block_delta
@@ -149,6 +149,6 @@ pub async fn height_at_timestamp(
 
         last_height = height;
 
-        height = (height as u64 + block_delta) as u32;
+        height = (height as i64 + block_delta) as u32;
     }
 }
