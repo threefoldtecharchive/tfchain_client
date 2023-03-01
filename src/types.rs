@@ -72,6 +72,24 @@ pub struct Node {
     pub connection_price: u32,
 }
 
+pub struct NodeV123 {
+    pub version: u32,
+    pub id: u32,
+    pub farm_id: u32,
+    pub twin_id: u32,
+    pub resources: Resources,
+    pub location: LocationV123,
+    pub public_config: Option<PublicConfig>,
+    pub created: u64,
+    pub farming_policy_id: u32,
+    pub interfaces: Vec<Interface>,
+    pub certification: NodeCertification,
+    pub secure_boot: bool,
+    pub virtualized: bool,
+    pub serial_number: String,
+    pub connection_price: u32,
+}
+
 pub struct Interface {
     pub name: String,
     // This really should be a [u8;6], but the chain saves this as a string currently;
@@ -89,6 +107,13 @@ pub struct Resources {
 pub struct Location {
     pub longitude: String,
     pub latitude: String,
+}
+
+pub struct LocationV123 {
+    pub longitude: String,
+    pub latitude: String,
+    pub city: String,
+    pub country: String,
 }
 
 pub struct Contract {
