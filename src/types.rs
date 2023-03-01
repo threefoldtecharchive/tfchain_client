@@ -1,18 +1,18 @@
 use std::net::IpAddr;
-
 /// The hash type used on the TfChain.
-pub type Hash = subxt::ext::sp_core::H256;
-
+pub type Hash = subxt::utils::H256;
+use subxt::utils::AccountId32;
 /// Public Key type, this is a placeholder.
 pub type PublicKey = [u8; 32];
 /// Signature type, this is a placeholder.
 pub type Signature = [u8; 64];
+pub type BlockNumber = subxt::rpc::types::BlockNumber;
 
 pub struct Twin {
     pub version: u32,
     pub id: u32,
     // TODO: proper typing
-    pub account_id: PublicKey,
+    pub account_id: AccountId32,
     pub ip: IpAddr,
     pub entities: Vec<EntityProof>,
 }
@@ -52,6 +52,7 @@ pub enum FarmCertification {
     NotCertified,
 }
 
+#[derive(Debug)]
 pub struct Node {
     pub version: u32,
     pub id: u32,
@@ -72,6 +73,7 @@ pub struct Node {
     pub connection_price: u32,
 }
 
+#[derive(Debug)]
 pub struct Interface {
     pub name: String,
     // This really should be a [u8;6], but the chain saves this as a string currently;
@@ -79,6 +81,7 @@ pub struct Interface {
     pub ips: Vec<String>,
 }
 
+#[derive(Debug)]
 pub struct Resources {
     pub hru: u64,
     pub sru: u64,
@@ -86,6 +89,7 @@ pub struct Resources {
     pub mru: u64,
 }
 
+#[derive(Debug)]
 pub struct Location {
     pub longitude: String,
     pub latitude: String,
@@ -133,17 +137,20 @@ pub struct RentContract {
     pub node_id: u32,
 }
 
+#[derive(Debug)]
 pub struct PublicConfig {
     pub ip4: PubIPConfig,
     pub ip6: Option<PubIPConfig>,
     pub domain: Option<Domain>,
 }
 
+#[derive(Debug)]
 pub struct PubIPConfig {
     pub ip: String,
     pub gw: String,
 }
 
+#[derive(Debug)]
 pub struct Domain(pub String);
 
 pub struct ContractResources {
@@ -173,6 +180,7 @@ pub struct FarmPolicy {
     pub farm_certification: FarmCertification,
 }
 
+#[derive(Debug)]
 pub enum NodeCertification {
     Certified,
     Diy,

@@ -1,0 +1,21 @@
+use tfchain_client::client::RuntimeClient;
+use tfchain_client::dynamic;
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let dyn_cl = dynamic::DynamicClient::new("wss://tfchain.grid.tf:443").await?;
+
+    let block_before_upgrade = dyn_cl.hash_at_height(Some(5808046 as u32)).await?;
+    let node = dyn_cl.node(1, block_before_upgrade).await?;
+    if let Some(node) = node {
+        println!("node before upgrade found: {:?}", node);
+    }
+
+    let block_after_upgrade = dyn_cl.hash_at_height(Some(6108046 as u32)).await?;
+    let node = dyn_cl.node(1, block_after_upgrade).await?;
+    if let Some(node) = node {
+        println!("node after upgrade found: {:?}", node);
+    }
+
+    Ok(())
+}

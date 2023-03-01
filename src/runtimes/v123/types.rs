@@ -33,7 +33,18 @@ use crate::types::{
     NodeCertification, NodeContract, PubIPConfig, PublicConfig, PublicIP, RentContract, Resources,
     Twin,
 };
-use subxt::ext::sp_runtime::AccountId32;
+use subxt::utils::AccountId32;
+
+pub type V123Twin = RuntimeTwin<RuntimeTwinIP, AccountId32>;
+pub type V123Farm = RuntimeFarm<RuntimeFarmName>;
+pub type V123Node = RuntimeNode<
+    RuntimeLocation,
+    RuntimeInterface<RuntimeInterfaceName, RuntimeInterfaceMac, BoundedVec<RuntimeInterfaceIp>>,
+    SerialNumber,
+>;
+pub type V123Contract = RuntimeContract;
+pub type V123ContractResources = RuntimeContractResources;
+pub type V123FarmingPolicy = RuntimeFarmingPolicy<u32>;
 
 impl From<RuntimeTwin<RuntimeTwinIP, AccountId32>> for Twin {
     fn from(rt: RuntimeTwin<RuntimeTwinIP, AccountId32>) -> Self {
@@ -47,7 +58,7 @@ impl From<RuntimeTwin<RuntimeTwinIP, AccountId32>> for Twin {
         Twin {
             version,
             id,
-            account_id: account_id.into(),
+            account_id,
             // SAFETY: all on chain IP's are verified to be properly formatted as strings.
             ip: unsafe { String::from_utf8_unchecked(ip.0 .0) }
                 .parse()

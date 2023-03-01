@@ -1,4 +1,4 @@
-use super::runtime::api::runtime_types::{
+pub use super::runtime::api::runtime_types::{
     frame_support::storage::bounded_vec::BoundedVec,
     pallet_smart_contract::types::{
         Cause as RuntimeCause, Contract as RuntimeContract, ContractData as RuntimeContractData,
@@ -37,7 +37,22 @@ use crate::types::{
     NodeCertification, NodeContract, PubIPConfig, PublicConfig, PublicIP, RentContract, Resources,
     Twin,
 };
-use subxt::ext::sp_runtime::AccountId32;
+use subxt::utils::AccountId32;
+
+pub type V115Twin = RuntimeTwin<RuntimeTwinIP, AccountId32>;
+pub type V115Farm =
+    RuntimeFarm<RuntimeFarmName, RuntimePublicIPGroup<RuntimePublicIP, RuntimeGatewayIP>>;
+pub type V115Node = RuntimeNode<
+    RuntimePublicConfig<
+        RuntimeIP<RuntimeIP4, RuntimeGW4>,
+        Option<RuntimeIP<RuntimeIP6, RuntimeGW6>>,
+        Option<RuntimeDomain>,
+    >,
+    RuntimeInterface<RuntimeInterfaceName, RuntimeInterfaceMac, BoundedVec<RuntimeInterfaceIp>>,
+>;
+pub type V115Contract = RuntimeContract;
+pub type V115ContractResources = RuntimeContractResources;
+pub type V115FarmingPolicy = RuntimeFarmingPolicy<u32>;
 
 impl From<RuntimeTwin<RuntimeTwinIP, AccountId32>> for Twin {
     fn from(rt: RuntimeTwin<RuntimeTwinIP, AccountId32>) -> Self {
@@ -51,7 +66,7 @@ impl From<RuntimeTwin<RuntimeTwinIP, AccountId32>> for Twin {
         Twin {
             version,
             id,
-            account_id: account_id.into(),
+            account_id,
             // SAFETY: all on chain IP's are verified to be properly formatted as strings.
             ip: unsafe { String::from_utf8_unchecked(ip.0 .0) }
                 .parse()
