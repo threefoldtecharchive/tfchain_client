@@ -18,6 +18,7 @@ pub const NRU_CONSUMPTION_RECEIVED: &str = "NruConsumptionReportReceived";
 pub const CONTRACT_CREATED: &str = "ContractCreated";
 pub const NODE_CONTRACT_CANCELLED: &str = "NodeContractCanceled";
 
+#[derive(Debug, Clone)]
 pub struct Twin {
     pub version: u32,
     pub id: u32,
@@ -27,6 +28,7 @@ pub struct Twin {
     pub entities: Vec<EntityProof>,
 }
 
+#[derive(Debug, Clone)]
 pub struct Farm {
     pub version: u32,
     pub id: u32,
@@ -39,6 +41,7 @@ pub struct Farm {
     pub farming_policy_limits: Option<FarmingPolicyLimit>,
 }
 
+#[derive(Debug, Clone)]
 pub struct PublicIP {
     // Not ideal but there is no type in std to represent IP+subnet currently, could make this a
     // tuple of (IP, mask).
@@ -48,6 +51,7 @@ pub struct PublicIP {
     pub contract_id: u64,
 }
 
+#[derive(Debug, Clone)]
 pub struct FarmingPolicyLimit {
     pub farming_policy_id: u32,
     pub cu: Option<u64>,
@@ -57,12 +61,13 @@ pub struct FarmingPolicyLimit {
     pub node_certification: bool,
 }
 
+#[derive(Debug, Clone)]
 pub enum FarmCertification {
     Gold,
     NotCertified,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Node {
     pub version: u32,
     pub id: u32,
@@ -83,7 +88,7 @@ pub struct Node {
     pub connection_price: u32,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Interface {
     pub name: String,
     // This really should be a [u8;6], but the chain saves this as a string currently;
@@ -91,7 +96,7 @@ pub struct Interface {
     pub ips: Vec<String>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Resources {
     pub hru: u64,
     pub sru: u64,
@@ -99,12 +104,13 @@ pub struct Resources {
     pub mru: u64,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Location {
     pub longitude: String,
     pub latitude: String,
 }
 
+#[derive(Debug, Clone)]
 pub struct Contract {
     pub version: u32,
     pub state: ContractState,
@@ -114,23 +120,27 @@ pub struct Contract {
     pub solution_provider_id: Option<u64>,
 }
 
+#[derive(Debug, Clone)]
 pub enum ContractState {
     Created,
     Deleted(Cause),
     GracePeriod(u64),
 }
 
+#[derive(Debug, Clone)]
 pub enum Cause {
     CanceledByUser,
     OutOfFunds,
 }
 
+#[derive(Debug, Clone)]
 pub enum ContractData {
     NodeContract(NodeContract),
     NameContract(NameContract),
     RentContract(RentContract),
 }
 
+#[derive(Debug, Clone)]
 pub struct NodeContract {
     pub node_id: u32,
     pub deployment_hash: Hash,
@@ -139,40 +149,45 @@ pub struct NodeContract {
     pub public_ips_list: Vec<PublicIP>,
 }
 
+#[derive(Debug, Clone)]
 pub struct NameContract {
     pub name: String,
 }
 
+#[derive(Debug, Clone)]
 pub struct RentContract {
     pub node_id: u32,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PublicConfig {
     pub ip4: PubIPConfig,
     pub ip6: Option<PubIPConfig>,
     pub domain: Option<Domain>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PubIPConfig {
     pub ip: String,
     pub gw: String,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Domain(pub String);
 
+#[derive(Debug, Clone)]
 pub struct ContractResources {
     pub contract_id: u64,
     pub used: Resources,
 }
 
+#[derive(Debug, Clone)]
 pub struct EntityProof {
     pub entity_id: u32,
     pub signature: Vec<u8>,
 }
 
+#[derive(Debug, Clone)]
 pub struct FarmPolicy {
     pub version: u32,
     pub id: u32,
@@ -190,11 +205,13 @@ pub struct FarmPolicy {
     pub farm_certification: FarmCertification,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum NodeCertification {
     Certified,
     Diy,
 }
+
+#[derive(Debug, Clone)]
 pub struct NruConsumption {
     pub contract_id: u64,
     pub timestamp: u64,
