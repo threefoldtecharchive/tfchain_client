@@ -209,16 +209,20 @@ impl RuntimeClient for DynamicClient {
             .storage()
             .at(block)
             .await?
-            .fetch_or_default(&storage_address)
-            .await?
-            .into_encoded();
+            .fetch(&storage_address)
+            .await?;
 
-        let twinv115: Result<V115Twin, codec::Error> =
-            codec::decode_from_bytes(result.clone().into());
+        if result.is_none() {
+            return Ok(None);
+        }
+
+        let r: Vec<u8> = result.unwrap().into_encoded().into();
+
+        let twinv115: Result<V115Twin, codec::Error> = codec::decode_from_bytes(r.clone().into());
         if let Ok(twin) = twinv115 {
             Ok(Some(twin.into()))
         } else {
-            let twinv123: V123Twin = codec::decode_from_bytes(result.into())?;
+            let twinv123: V123Twin = codec::decode_from_bytes(r.into())?;
             Ok(Some(twinv123.into()))
         }
     }
@@ -252,16 +256,20 @@ impl RuntimeClient for DynamicClient {
             .storage()
             .at(block)
             .await?
-            .fetch_or_default(&storage_address)
-            .await?
-            .into_encoded();
+            .fetch(&storage_address)
+            .await?;
 
-        let farmv115: Result<V115Farm, codec::Error> =
-            codec::decode_from_bytes(result.clone().into());
+        if result.is_none() {
+            return Ok(None);
+        }
+
+        let r: Vec<u8> = result.unwrap().into_encoded().into();
+
+        let farmv115: Result<V115Farm, codec::Error> = codec::decode_from_bytes(r.clone().into());
         if let Ok(farm) = farmv115 {
             Ok(Some(farm.into()))
         } else {
-            let farmv123: V123Farm = codec::decode_from_bytes(result.into())?;
+            let farmv123: V123Farm = codec::decode_from_bytes(r.into())?;
             Ok(Some(farmv123.into()))
         }
     }
@@ -282,11 +290,16 @@ impl RuntimeClient for DynamicClient {
             .storage()
             .at(block)
             .await?
-            .fetch_or_default(&storage_address)
-            .await?
-            .into_encoded();
+            .fetch(&storage_address)
+            .await?;
 
-        Ok(Some(codec::decode_from_bytes(result.into())?))
+        if result.is_none() {
+            return Ok(None);
+        }
+
+        let r: Vec<u8> = result.unwrap().into_encoded().into();
+
+        Ok(Some(codec::decode_from_bytes(r.into())?))
     }
 
     /// Get the amount of farms on the grid.
@@ -318,16 +331,20 @@ impl RuntimeClient for DynamicClient {
             .storage()
             .at(block)
             .await?
-            .fetch_or_default(&storage_address)
-            .await?
-            .into_encoded();
+            .fetch(&storage_address)
+            .await?;
 
-        let nodev115: Result<V115Node, codec::Error> =
-            codec::decode_from_bytes(result.clone().into());
+        if result.is_none() {
+            return Ok(None);
+        }
+
+        let r: Vec<u8> = result.unwrap().into_encoded().into();
+
+        let nodev115: Result<V115Node, codec::Error> = codec::decode_from_bytes(r.clone().into());
         if let Ok(node) = nodev115 {
             Ok(Some(node.into()))
         } else {
-            let nodev123: V123Node = codec::decode_from_bytes(result.into())?;
+            let nodev123: V123Node = codec::decode_from_bytes(r.into())?;
             Ok(Some(nodev123.into()))
         }
     }
@@ -364,16 +381,20 @@ impl RuntimeClient for DynamicClient {
             .storage()
             .at(block)
             .await?
-            .fetch_or_default(&storage_address)
-            .await?
-            .into_encoded();
+            .fetch(&storage_address)
+            .await?;
 
-        let cv115: Result<V115Contract, codec::Error> =
-            codec::decode_from_bytes(result.clone().into());
+        if result.is_none() {
+            return Ok(None);
+        }
+
+        let r: Vec<u8> = result.unwrap().into_encoded().into();
+
+        let cv115: Result<V115Contract, codec::Error> = codec::decode_from_bytes(r.clone().into());
         if let Ok(contract) = cv115 {
             Ok(Some(contract.into()))
         } else {
-            let cv123: V123Contract = codec::decode_from_bytes(result.into())?;
+            let cv123: V123Contract = codec::decode_from_bytes(r.into())?;
             Ok(Some(cv123.into()))
         }
     }
@@ -394,16 +415,21 @@ impl RuntimeClient for DynamicClient {
             .storage()
             .at(block)
             .await?
-            .fetch_or_default(&storage_address)
-            .await?
-            .into_encoded();
+            .fetch(&storage_address)
+            .await?;
+
+        if result.is_none() {
+            return Ok(None);
+        }
+
+        let r: Vec<u8> = result.unwrap().into_encoded().into();
 
         let crv115: Result<V115ContractResources, codec::Error> =
-            codec::decode_from_bytes(result.clone().into());
+            codec::decode_from_bytes(r.clone().into());
         if let Ok(resources) = crv115 {
             Ok(Some(resources.into()))
         } else {
-            let crv123: V123ContractResources = codec::decode_from_bytes(result.into())?;
+            let crv123: V123ContractResources = codec::decode_from_bytes(r.into())?;
             Ok(Some(crv123.into()))
         }
     }
@@ -440,16 +466,21 @@ impl RuntimeClient for DynamicClient {
             .storage()
             .at(block)
             .await?
-            .fetch_or_default(&storage_address)
-            .await?
-            .into_encoded();
+            .fetch(&storage_address)
+            .await?;
+
+        if result.is_none() {
+            return Ok(None);
+        }
+
+        let r: Vec<u8> = result.unwrap().into_encoded().into();
 
         let fpv115: Result<V115FarmingPolicy, codec::Error> =
-            codec::decode_from_bytes(result.clone().into());
+            codec::decode_from_bytes(r.clone().into());
         if let Ok(policy) = fpv115 {
             Ok(Some(policy.into()))
         } else {
-            let fpv123: V123FarmingPolicy = codec::decode_from_bytes(result.into())?;
+            let fpv123: V123FarmingPolicy = codec::decode_from_bytes(r.into())?;
             Ok(Some(fpv123.into()))
         }
     }
