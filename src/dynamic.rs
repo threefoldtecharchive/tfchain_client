@@ -458,7 +458,7 @@ impl RuntimeClient for DynamicClient {
     ) -> Result<Option<FarmPolicy>, Box<dyn std::error::Error>> {
         let storage_address = subxt::dynamic::storage(
             TFGRID_MODULE,
-            "FarmingPolicies",
+            "FarmingPoliciesMap",
             vec![Value::u128(id.into())],
         );
         let result = self
