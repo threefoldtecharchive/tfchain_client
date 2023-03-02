@@ -12,9 +12,11 @@ use crate::runtimes::{
     },
 };
 use crate::types::{
-    Contract, ContractResources, Farm, FarmPolicy, Hash, Node, RuntimeEvents, Twin,
-    CONTRACT_CREATED, NODE_STORED, NODE_UPDATED, NODE_UPTIME_REPORTED, NRU_CONSUMPTION_RECEIVED,
-    SMART_CONTRACT_MODULE, TFGRID_MODULE, UPDATE_USED_RESOURCES,
+    Contract, ContractResources, Farm, FarmPolicy, Hash, Node, RuntimeEvents, Twin, CONTRACTS,
+    CONTRACT_CREATED, CONTRACT_ID, FARMING_POLICIES, FARMING_POLICY_ID, FARMS, FARM_ID,
+    FARM_PAYOUT_V2_ADDRESS, NODES, NODE_CONTRACT_RESOURCES, NODE_ID, NODE_STORED, NODE_UPDATED,
+    NODE_UPTIME_REPORTED, NRU_CONSUMPTION_RECEIVED, SMART_CONTRACT_MODULE, TFGRID_MODULE,
+    TIMESTAMP_MODULE, TIMESTAMP_NOW, TWINS, TWIN_ID, UPDATE_USED_RESOURCES,
 };
 use subxt::storage::DynamicStorageAddress;
 use subxt::{
@@ -48,10 +50,18 @@ impl RuntimeClient for DynamicClient {
         &self,
         block: Option<Hash>,
     ) -> Result<Vec<RuntimeEvents>, Box<dyn std::error::Error>> {
-        let block = self.api.blocks().at(block).await?;
+        let meta = self.api.rpc().metadata(block).await?;
+        let runtime_v = self.api.rpc().runtime_version(block).await?;
+        self.api.set_runtime_version(runtime_v);
+        self.api.set_metadata(meta);
+
+        let b_events = self.api.events().at(block).await?;
 
         let mut events: Vec<RuntimeEvents> = vec![];
-        for event in block.events().await?.iter() {
+        for event in b_events.iter() {
+            if !event.is_ok() {
+                continue;
+            }
             let evt = event?;
 
             match (evt.pallet_name(), evt.variant_name()) {
@@ -94,6 +104,7 @@ impl RuntimeClient for DynamicClient {
                     }
                 }
                 (TFGRID_MODULE, NODE_UPTIME_REPORTED) => {
+                    println!("found uptime");
                     if evt.as_event::<V115NodeUptimeReportedEvent>().is_ok() {
                         let uptime = evt
                             .as_event::<V115NodeUptimeReportedEvent>()
@@ -183,7 +194,7 @@ impl RuntimeClient for DynamicClient {
     /// Get the on chain timestamp of the block, in seconds since the UNIX epoch.
     async fn timestamp(&self, block: Option<Hash>) -> Result<u64, Box<dyn std::error::Error>> {
         let storage_address: DynamicStorageAddress<Value> =
-            subxt::dynamic::storage("Timestamp", "Now", vec![]);
+            subxt::dynamic::storage(TIMESTAMP_MODULE, TIMESTAMP_NOW, vec![]);
         let result = self
             .api
             .storage()
@@ -203,7 +214,7 @@ impl RuntimeClient for DynamicClient {
         block: Option<Hash>,
     ) -> Result<Option<Twin>, Box<dyn std::error::Error>> {
         let storage_address =
-            subxt::dynamic::storage(TFGRID_MODULE, "Twins", vec![Value::u128(id.into())]);
+            subxt::dynamic::storage(TFGRID_MODULE, TWINS, vec![Value::u128(id.into())]);
         let result = self
             .api
             .storage()
@@ -230,7 +241,7 @@ impl RuntimeClient for DynamicClient {
     /// Get the amount of twins on the grid.
     async fn twin_count(&self, block: Option<Hash>) -> Result<u32, Box<dyn std::error::Error>> {
         let storage_address: DynamicStorageAddress<Value> =
-            subxt::dynamic::storage(TFGRID_MODULE, "TwinID", vec![]);
+            subxt::dynamic::storage(TFGRID_MODULE, TWIN_ID, vec![]);
         let result = self
             .api
             .storage()
@@ -250,7 +261,7 @@ impl RuntimeClient for DynamicClient {
         block: Option<Hash>,
     ) -> Result<Option<Farm>, Box<dyn std::error::Error>> {
         let storage_address =
-            subxt::dynamic::storage(TFGRID_MODULE, "Farms", vec![Value::u128(id.into())]);
+            subxt::dynamic::storage(TFGRID_MODULE, FARMS, vec![Value::u128(id.into())]);
         let result = self
             .api
             .storage()
@@ -282,7 +293,7 @@ impl RuntimeClient for DynamicClient {
     ) -> Result<Option<String>, Box<dyn std::error::Error>> {
         let storage_address = subxt::dynamic::storage(
             TFGRID_MODULE,
-            "FarmPayoutV2AddressByFarmID",
+            FARM_PAYOUT_V2_ADDRESS,
             vec![Value::u128(id.into())],
         );
         let result = self
@@ -305,7 +316,7 @@ impl RuntimeClient for DynamicClient {
     /// Get the amount of farms on the grid.
     async fn farm_count(&self, block: Option<Hash>) -> Result<u32, Box<dyn std::error::Error>> {
         let storage_address: DynamicStorageAddress<Value> =
-            subxt::dynamic::storage(TFGRID_MODULE, "FarmID", vec![]);
+            subxt::dynamic::storage(TFGRID_MODULE, FARM_ID, vec![]);
         let result = self
             .api
             .storage()
@@ -325,7 +336,7 @@ impl RuntimeClient for DynamicClient {
         block: Option<Hash>,
     ) -> Result<Option<Node>, Box<dyn std::error::Error>> {
         let storage_address =
-            subxt::dynamic::storage(TFGRID_MODULE, "Nodes", vec![Value::u128(id.into())]);
+            subxt::dynamic::storage(TFGRID_MODULE, NODES, vec![Value::u128(id.into())]);
         let result = self
             .api
             .storage()
@@ -352,7 +363,7 @@ impl RuntimeClient for DynamicClient {
     /// Get the amount of nodes on the grid.
     async fn node_count(&self, block: Option<Hash>) -> Result<u32, Box<dyn std::error::Error>> {
         let storage_address: DynamicStorageAddress<Value> =
-            subxt::dynamic::storage(TFGRID_MODULE, "NodeID", vec![]);
+            subxt::dynamic::storage(TFGRID_MODULE, NODE_ID, vec![]);
         let result = self
             .api
             .storage()
@@ -373,7 +384,7 @@ impl RuntimeClient for DynamicClient {
     ) -> Result<Option<Contract>, Box<dyn std::error::Error>> {
         let storage_address = subxt::dynamic::storage(
             SMART_CONTRACT_MODULE,
-            "Contracts",
+            CONTRACTS,
             vec![Value::u128(id.into())],
         );
         let result = self
@@ -407,7 +418,7 @@ impl RuntimeClient for DynamicClient {
     ) -> Result<Option<ContractResources>, Box<dyn std::error::Error>> {
         let storage_address = subxt::dynamic::storage(
             SMART_CONTRACT_MODULE,
-            "NodeContractResources",
+            NODE_CONTRACT_RESOURCES,
             vec![Value::u128(id.into())],
         );
         let result = self
@@ -437,7 +448,7 @@ impl RuntimeClient for DynamicClient {
     /// Get the amount of contracts on the grid.
     async fn contract_count(&self, block: Option<Hash>) -> Result<u64, Box<dyn std::error::Error>> {
         let storage_address: DynamicStorageAddress<Value> =
-            subxt::dynamic::storage(SMART_CONTRACT_MODULE, "ContractID", vec![]);
+            subxt::dynamic::storage(SMART_CONTRACT_MODULE, CONTRACT_ID, vec![]);
         let result = self
             .api
             .storage()
@@ -458,7 +469,7 @@ impl RuntimeClient for DynamicClient {
     ) -> Result<Option<FarmPolicy>, Box<dyn std::error::Error>> {
         let storage_address = subxt::dynamic::storage(
             TFGRID_MODULE,
-            "FarmingPoliciesMap",
+            FARMING_POLICIES,
             vec![Value::u128(id.into())],
         );
         let result = self
@@ -491,7 +502,7 @@ impl RuntimeClient for DynamicClient {
         block: Option<Hash>,
     ) -> Result<u32, Box<dyn std::error::Error>> {
         let storage_address: DynamicStorageAddress<Value> =
-            subxt::dynamic::storage(TFGRID_MODULE, "FarmingPolicyID", vec![]);
+            subxt::dynamic::storage(TFGRID_MODULE, FARMING_POLICY_ID, vec![]);
         let result = self
             .api
             .storage()

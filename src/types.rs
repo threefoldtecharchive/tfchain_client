@@ -12,11 +12,27 @@ pub const TFGRID_MODULE: &str = "TfgridModule";
 pub const NODE_STORED: &str = "NodeStored";
 pub const NODE_UPDATED: &str = "NodeUpdated";
 pub const NODE_UPTIME_REPORTED: &str = "NodeUptimeReported";
+pub const FARMING_POLICIES: &str = "FarmingPoliciesMap";
+pub const FARMING_POLICY_ID: &str = "FarmingPolicyID";
+pub const NODE_ID: &str = "NodeID";
+pub const NODES: &str = "Nodes";
+pub const FARM_ID: &str = "FarmID";
+pub const FARM_PAYOUT_V2_ADDRESS: &str = "FarmPayoutV2AddressByFarmID";
+pub const TWINS: &str = "Twins";
+pub const TWIN_ID: &str = "TwinID";
+pub const FARMS: &str = "Farms";
+
 pub const SMART_CONTRACT_MODULE: &str = "SmartContractModule";
 pub const UPDATE_USED_RESOURCES: &str = "UpdatedUsedResources";
 pub const NRU_CONSUMPTION_RECEIVED: &str = "NruConsumptionReportReceived";
 pub const CONTRACT_CREATED: &str = "ContractCreated";
 pub const NODE_CONTRACT_CANCELLED: &str = "NodeContractCanceled";
+pub const NODE_CONTRACT_RESOURCES: &str = "NodeContractResources";
+pub const CONTRACT_ID: &str = "ContractID";
+pub const CONTRACTS: &str = "Contracts";
+
+pub const TIMESTAMP_MODULE: &str = "Timestamp";
+pub const TIMESTAMP_NOW: &str = "Now";
 
 #[derive(Debug, Clone)]
 pub struct Twin {
@@ -219,6 +235,7 @@ pub struct NruConsumption {
     pub nru: u64,
 }
 
+#[derive(Debug, Clone)]
 pub enum RuntimeEvents {
     NodeStoredEvent(Node),
     NodeUpdatedEvent(Node),
