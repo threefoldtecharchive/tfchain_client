@@ -104,7 +104,6 @@ impl RuntimeClient for DynamicClient {
                     }
                 }
                 (TFGRID_MODULE, NODE_UPTIME_REPORTED) => {
-                    println!("found uptime");
                     if evt.as_event::<V115NodeUptimeReportedEvent>().is_ok() {
                         let uptime = evt
                             .as_event::<V115NodeUptimeReportedEvent>()
