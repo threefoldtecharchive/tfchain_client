@@ -6,6 +6,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let dyn_cl = dynamic::DynamicClient::new("wss://tfchain.grid.tf:443").await?;
 
     let block_before_upgrade = dyn_cl.hash_at_height(Some(5808046 as u32)).await?;
+    let time = dyn_cl.timestamp(block_before_upgrade).await?;
+    print!("time: {}", time);
     let node = dyn_cl.node(1, block_before_upgrade).await?;
     if let Some(node) = node {
         println!("node before upgrade found: {:?}", node);

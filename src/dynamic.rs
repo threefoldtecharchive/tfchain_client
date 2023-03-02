@@ -183,7 +183,7 @@ impl RuntimeClient for DynamicClient {
     /// Get the on chain timestamp of the block, in seconds since the UNIX epoch.
     async fn timestamp(&self, block: Option<Hash>) -> Result<u64, Box<dyn std::error::Error>> {
         let storage_address: DynamicStorageAddress<Value> =
-            subxt::dynamic::storage("Timestamp", "now", vec![]);
+            subxt::dynamic::storage("Timestamp", "Now", vec![]);
         let result = self
             .api
             .storage()
