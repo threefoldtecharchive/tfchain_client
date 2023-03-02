@@ -26,6 +26,7 @@ use subxt::{
     OnlineClient,
     PolkadotConfig,
 };
+use tokio::join;
 
 #[derive(Debug)]
 pub enum Error {
@@ -50,10 +51,13 @@ impl RuntimeClient for DynamicClient {
         &self,
         block: Option<Hash>,
     ) -> Result<Vec<RuntimeEvents>, Box<dyn std::error::Error>> {
-        let meta = self.api.rpc().metadata(block).await?;
-        let runtime_v = self.api.rpc().runtime_version(block).await?;
-        self.api.set_runtime_version(runtime_v);
-        self.api.set_metadata(meta);
+        let (meta, runtime_v) = join!(
+            self.api.rpc().metadata(block),
+            self.api.rpc().runtime_version(block),
+        );
+
+        self.api.set_runtime_version(runtime_v?);
+        self.api.set_metadata(meta?);
 
         let b_events = self.api.events().at(block).await?;
 
