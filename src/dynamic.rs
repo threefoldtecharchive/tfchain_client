@@ -70,110 +70,51 @@ impl RuntimeClient for DynamicClient {
 
             match (evt.pallet_name(), evt.variant_name()) {
                 (TFGRID_MODULE, NODE_STORED) => {
-                    if evt.as_event::<V115NodeStoredEvent>().is_ok() {
-                        let node = evt
-                            .as_event::<V115NodeStoredEvent>()
-                            .unwrap()
-                            .unwrap()
-                            .0
-                            .into();
-                        events.push(RuntimeEvents::NodeStoredEvent(node))
-                    } else if evt.as_event::<V123NodeStoredEvent>().is_ok() {
-                        let node = evt
-                            .as_event::<V123NodeStoredEvent>()
-                            .unwrap()
-                            .unwrap()
-                            .0
-                            .into();
-                        events.push(RuntimeEvents::NodeStoredEvent(node))
-                    }
+                    if let Ok(Some(evt)) = evt.as_event::<V115NodeStoredEvent>() {
+                        events.push(RuntimeEvents::NodeStoredEvent(evt.0.into()));
+                    } else if let Ok(Some(evt)) = evt.as_event::<V123NodeStoredEvent>() {
+                        events.push(RuntimeEvents::NodeStoredEvent(evt.0.into()));
+                    };
                 }
                 (TFGRID_MODULE, NODE_UPDATED) => {
-                    if evt.as_event::<V115NodeUpdatedEvent>().is_ok() {
-                        let node = evt
-                            .as_event::<V115NodeUpdatedEvent>()
-                            .unwrap()
-                            .unwrap()
-                            .0
-                            .into();
-                        events.push(RuntimeEvents::NodeUpdatedEvent(node))
-                    } else if evt.as_event::<V123NodeUpdatedEvent>().is_ok() {
-                        let node = evt
-                            .as_event::<V123NodeUpdatedEvent>()
-                            .unwrap()
-                            .unwrap()
-                            .0
-                            .into();
-                        events.push(RuntimeEvents::NodeUpdatedEvent(node))
-                    }
+                    if let Ok(Some(evt)) = evt.as_event::<V115NodeUpdatedEvent>() {
+                        events.push(RuntimeEvents::NodeUpdatedEvent(evt.0.into()));
+                    } else if let Ok(Some(evt)) = evt.as_event::<V123NodeUpdatedEvent>() {
+                        events.push(RuntimeEvents::NodeUpdatedEvent(evt.0.into()));
+                    };
                 }
                 (TFGRID_MODULE, NODE_UPTIME_REPORTED) => {
-                    if evt.as_event::<V115NodeUptimeReportedEvent>().is_ok() {
-                        let uptime = evt
-                            .as_event::<V115NodeUptimeReportedEvent>()
-                            .unwrap()
-                            .unwrap();
-                        events.push(RuntimeEvents::NodeUptimeReported(
-                            uptime.0, uptime.1, uptime.2,
-                        ))
-                    } else if evt.as_event::<V123NodeUptimeReportedEvent>().is_ok() {
-                        let uptime = evt
-                            .as_event::<V123NodeUptimeReportedEvent>()
-                            .unwrap()
-                            .unwrap();
-                        events.push(RuntimeEvents::NodeUptimeReported(
-                            uptime.0, uptime.1, uptime.2,
-                        ))
-                    }
+                    if let Ok(Some(evt)) = evt.as_event::<V115NodeUptimeReportedEvent>() {
+                        events.push(RuntimeEvents::NodeUptimeReported(evt.0, evt.1, evt.2));
+                    } else if let Ok(Some(evt)) = evt.as_event::<V123NodeUptimeReportedEvent>() {
+                        events.push(RuntimeEvents::NodeUptimeReported(evt.0, evt.1, evt.2));
+                    };
                 }
                 (SMART_CONTRACT_MODULE, UPDATE_USED_RESOURCES) => {
-                    if evt.as_event::<V115ContractUpdatedResourcesEvent>().is_ok() {
-                        let contract_resources = evt
-                            .as_event::<V115ContractUpdatedResourcesEvent>()
-                            .unwrap()
-                            .unwrap();
-                        events.push(RuntimeEvents::ContractUsedResourcesUpdated(
-                            contract_resources.0.into(),
-                        ))
-                    } else if evt.as_event::<V123ContractUpdatedResourcesEvent>().is_ok() {
-                        let contract_resources = evt
-                            .as_event::<V123ContractUpdatedResourcesEvent>()
-                            .unwrap()
-                            .unwrap();
-                        events.push(RuntimeEvents::ContractUsedResourcesUpdated(
-                            contract_resources.0.into(),
-                        ))
-                    }
+                    if let Ok(Some(evt)) = evt.as_event::<V115ContractUpdatedResourcesEvent>() {
+                        events.push(RuntimeEvents::ContractUsedResourcesUpdated(evt.0.into()));
+                    } else if let Ok(Some(evt)) =
+                        evt.as_event::<V123ContractUpdatedResourcesEvent>()
+                    {
+                        events.push(RuntimeEvents::ContractUsedResourcesUpdated(evt.0.into()));
+                    };
                 }
                 (SMART_CONTRACT_MODULE, NRU_CONSUMPTION_RECEIVED) => {
-                    if evt
-                        .as_event::<V115ContractNruConsumptionReceivedEvent>()
-                        .is_ok()
+                    if let Ok(Some(evt)) = evt.as_event::<V115ContractNruConsumptionReceivedEvent>()
                     {
-                        let nru = evt
-                            .as_event::<V115ContractNruConsumptionReceivedEvent>()
-                            .unwrap()
-                            .unwrap();
-                        events.push(RuntimeEvents::NruConsumptionReceived(nru.0.into()))
-                    } else if evt
-                        .as_event::<V123ContractNruConsumptionReceivedEvent>()
-                        .is_ok()
+                        events.push(RuntimeEvents::NruConsumptionReceived(evt.0.into()));
+                    } else if let Ok(Some(evt)) =
+                        evt.as_event::<V123ContractNruConsumptionReceivedEvent>()
                     {
-                        let nru = evt
-                            .as_event::<V123ContractNruConsumptionReceivedEvent>()
-                            .unwrap()
-                            .unwrap();
-                        events.push(RuntimeEvents::NruConsumptionReceived(nru.0.into()))
-                    }
+                        events.push(RuntimeEvents::NruConsumptionReceived(evt.0.into()));
+                    };
                 }
                 (SMART_CONTRACT_MODULE, CONTRACT_CREATED) => {
-                    if evt.as_event::<V115ContractCreatedEvent>().is_ok() {
-                        let contract = evt.as_event::<V115ContractCreatedEvent>().unwrap().unwrap();
-                        events.push(RuntimeEvents::ContractCreated(contract.0.into()))
-                    } else if evt.as_event::<V123ContractCreatedEvent>().is_ok() {
-                        let contract = evt.as_event::<V123ContractCreatedEvent>().unwrap().unwrap();
-                        events.push(RuntimeEvents::ContractCreated(contract.0.into()))
-                    }
+                    if let Ok(Some(evt)) = evt.as_event::<V115ContractCreatedEvent>() {
+                        events.push(RuntimeEvents::ContractCreated(evt.0.into()));
+                    } else if let Ok(Some(evt)) = evt.as_event::<V123ContractCreatedEvent>() {
+                        events.push(RuntimeEvents::ContractCreated(evt.0.into()));
+                    };
                 }
                 (_m, _e) => (),
             }
