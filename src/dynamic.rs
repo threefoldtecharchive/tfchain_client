@@ -96,7 +96,7 @@ impl RuntimeClient for DynamicClient {
                             .unwrap()
                             .0
                             .into();
-                        events.push(RuntimeEvents::NodeStoredEvent(node))
+                        events.push(RuntimeEvents::NodeUpdatedEvent(node))
                     } else if evt.as_event::<V123NodeUpdatedEvent>().is_ok() {
                         let node = evt
                             .as_event::<V123NodeUpdatedEvent>()
@@ -104,7 +104,7 @@ impl RuntimeClient for DynamicClient {
                             .unwrap()
                             .0
                             .into();
-                        events.push(RuntimeEvents::NodeStoredEvent(node))
+                        events.push(RuntimeEvents::NodeUpdatedEvent(node))
                     }
                 }
                 (TFGRID_MODULE, NODE_UPTIME_REPORTED) => {
