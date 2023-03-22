@@ -5,7 +5,7 @@
 // };
 // use subxt::{
 //     events::Events,
-//     rpc::types::{BlockNumber, NumberOrHex},
+//     rpc::{BlockNumber, NumberOrHex},
 //     OnlineClient, PolkadotConfig,
 // };
 

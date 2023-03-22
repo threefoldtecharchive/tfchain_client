@@ -1,7 +1,9 @@
 pub use subxt::events::Events;
 pub use subxt::PolkadotConfig;
 
-use crate::types::{Contract, ContractResources, Farm, FarmPolicy, Hash, Node, Twin};
+use crate::types::{
+    Contract, ContractResources, Farm, FarmPolicy, Hash, Node, RuntimeEvents, Twin,
+};
 
 /// The expected amount of seconds per block.
 const BLOCK_TIME_SECONDS: i64 = 6;
@@ -25,7 +27,7 @@ pub trait RuntimeClient {
     async fn events(
         &self,
         block: Option<Hash>,
-    ) -> Result<Events<PolkadotConfig>, Box<dyn std::error::Error>>;
+    ) -> Result<Vec<RuntimeEvents>, Box<dyn std::error::Error>>;
 
     /// Get the hash of a block at the given height. Note that in this case, block is actually the
     /// height rather than the hash to query at.
@@ -35,7 +37,7 @@ pub trait RuntimeClient {
     ) -> Result<Option<Hash>, Box<dyn std::error::Error>>;
 
     /// Get the on chain timestamp of the block, in seconds since the UNIX epoch.
-    async fn timestamp(&self, block: Option<Hash>) -> Result<i64, Box<dyn std::error::Error>>;
+    async fn timestamp(&self, block: Option<Hash>) -> Result<u64, Box<dyn std::error::Error>>;
 
     /// Get the twin referenced by this ID.
     async fn twin(
@@ -113,7 +115,7 @@ pub async fn height_at_timestamp(
     client: &dyn RuntimeClient,
     ts: i64,
 ) -> Result<u32, Box<dyn std::error::Error>> {
-    let latest_ts = client.timestamp(None).await? / 1000;
+    let latest_ts = (client.timestamp(None).await? / 1000) as i64;
     if latest_ts < ts {
         panic!(
             "can't fetch block for future timestamp {} vs latest {}",
@@ -130,7 +132,7 @@ pub async fn height_at_timestamp(
                 continue;
             }
         };
-        let block_time = client.timestamp(Some(hash)).await? / 1000;
+        let block_time = (client.timestamp(Some(hash)).await? / 1000) as i64;
         let time_delta = ts - block_time;
         let block_delta = time_delta / BLOCK_TIME_SECONDS;
         if block_delta == 0 {

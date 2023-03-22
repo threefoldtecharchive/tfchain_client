@@ -3,13 +3,21 @@ name = "tfchain_client"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+path = "src/lib.rs"
+name = "tfchain_client"
+
+[[bin]]
+path = "src/main.rs"
+name = "tfchain_cli"
 
 [dependencies]
-subxt = "0.24"
+subxt = "0.27"
 codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = ["derive", "full", "bit-vec"] }
 sp-keyring = "6.0.0"
 async-trait = "0.1"
+scale-value = "0.6.0"
+tokio = { version = "1.8", features = ["rt-multi-thread", "macros", "time"] }
 
 [dev-dependencies]
 tokio = { version = "1.21.2", features = ["full"] }

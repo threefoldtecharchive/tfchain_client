@@ -1,5 +1,4 @@
-pub use super::runtime::api::runtime_types::{
-    frame_support::storage::bounded_vec::BoundedVec,
+use super::runtime::api::runtime_types::{
     pallet_smart_contract::types::{
         Cause as RuntimeCause, Contract as RuntimeContract, ContractData as RuntimeContractData,
         ContractResources as RuntimeContractResources, ContractState as RuntimeContractState,
@@ -12,23 +11,20 @@ pub use super::runtime::api::runtime_types::{
             InterfaceIp as RuntimeInterfaceIp, InterfaceMac as RuntimeInterfaceMac,
             InterfaceName as RuntimeInterfaceName,
         },
-        pub_config::{
-            Domain as RuntimeDomain, GW4 as RuntimeGW4, GW6 as RuntimeGW6, IP4 as RuntimeIP4,
-            IP6 as RuntimeIP6,
-        },
-        pub_ip::{GatewayIP as RuntimeGatewayIP, PublicIP as RuntimePublicIP},
+        node::{Location as RuntimeLocation, SerialNumber},
         twin::TwinIp as RuntimeTwinIP,
         types::{
             EntityProof as RuntimeEntityProof, FarmingPolicy as RuntimeFarmingPolicy,
             Twin as RuntimeTwin,
         },
     },
+    sp_core::bounded::bounded_vec::BoundedVec,
+    tfchain_support::resources::Resources as RuntimeResources,
     tfchain_support::types::{
         Farm as RuntimeFarm, FarmCertification as RuntimeFarmCertification,
         FarmingPolicyLimit as RuntimeFarmingPolicyLimit, Interface as RuntimeInterface,
-        Location as RuntimeLocation, Node as RuntimeNode,
-        NodeCertification as RuntimeNodeCertification, PublicConfig as RuntimePublicConfig,
-        PublicIP as RuntimePublicIPGroup, Resources as RuntimeResources, IP as RuntimeIP,
+        Node as RuntimeNode, NodeCertification as RuntimeNodeCertification,
+        PublicIP as RuntimePublicIP,
     },
 };
 use crate::types::{
@@ -39,30 +35,26 @@ use crate::types::{
 };
 use subxt::utils::AccountId32;
 
-pub type V115Twin = RuntimeTwin<RuntimeTwinIP, AccountId32>;
-pub type V115Farm =
-    RuntimeFarm<RuntimeFarmName, RuntimePublicIPGroup<RuntimePublicIP, RuntimeGatewayIP>>;
-pub type V115Node = RuntimeNode<
-    RuntimePublicConfig<
-        RuntimeIP<RuntimeIP4, RuntimeGW4>,
-        Option<RuntimeIP<RuntimeIP6, RuntimeGW6>>,
-        Option<RuntimeDomain>,
-    >,
+pub type V123Twin = RuntimeTwin<RuntimeTwinIP, AccountId32>;
+pub type V123Farm = RuntimeFarm<RuntimeFarmName>;
+pub type V123Node = RuntimeNode<
+    RuntimeLocation,
     RuntimeInterface<RuntimeInterfaceName, RuntimeInterfaceMac, BoundedVec<RuntimeInterfaceIp>>,
+    SerialNumber,
 >;
-pub type V115Contract = RuntimeContract;
-pub type V115ContractResources = RuntimeContractResources;
-pub type V115FarmingPolicy = RuntimeFarmingPolicy<u32>;
+pub type V123Contract = RuntimeContract;
+pub type V123ContractResources = RuntimeContractResources;
+pub type V123FarmingPolicy = RuntimeFarmingPolicy<u32>;
 
-pub type V115NodeStoredEvent = super::runtime::api::tfgrid_module::events::NodeStored;
-pub type V115NodeUpdatedEvent = super::runtime::api::tfgrid_module::events::NodeUpdated;
-pub type V115NodeUptimeReportedEvent =
+pub type V123NodeStoredEvent = super::runtime::api::tfgrid_module::events::NodeStored;
+pub type V123NodeUpdatedEvent = super::runtime::api::tfgrid_module::events::NodeUpdated;
+pub type V123NodeUptimeReportedEvent =
     super::runtime::api::tfgrid_module::events::NodeUptimeReported;
-pub type V115ContractCreatedEvent =
+pub type V123ContractCreatedEvent =
     super::runtime::api::smart_contract_module::events::ContractCreated;
-pub type V115ContractUpdatedResourcesEvent =
+pub type V123ContractUpdatedResourcesEvent =
     super::runtime::api::smart_contract_module::events::UpdatedUsedResources;
-pub type V115ContractNruConsumptionReceivedEvent =
+pub type V123ContractNruConsumptionReceivedEvent =
     super::runtime::api::smart_contract_module::events::NruConsumptionReportReceived;
 
 impl From<RuntimeTwin<RuntimeTwinIP, AccountId32>> for Twin {
@@ -101,12 +93,8 @@ impl From<RuntimeEntityProof> for EntityProof {
     }
 }
 
-impl From<RuntimeFarm<RuntimeFarmName, RuntimePublicIPGroup<RuntimePublicIP, RuntimeGatewayIP>>>
-    for Farm
-{
-    fn from(
-        rf: RuntimeFarm<RuntimeFarmName, RuntimePublicIPGroup<RuntimePublicIP, RuntimeGatewayIP>>,
-    ) -> Self {
+impl From<RuntimeFarm<RuntimeFarmName>> for Farm {
+    fn from(rf: RuntimeFarm<RuntimeFarmName>) -> Self {
         let RuntimeFarm {
             version,
             id,
@@ -118,6 +106,7 @@ impl From<RuntimeFarm<RuntimeFarmName, RuntimePublicIPGroup<RuntimePublicIP, Run
             dedicated_farm,
             farming_policy_limits,
         } = rf;
+
         Farm {
             version,
             id,
@@ -159,23 +148,6 @@ impl From<RuntimeFarmingPolicyLimit> for FarmingPolicyLimit {
             end,
             node_count,
             node_certification,
-        }
-    }
-}
-
-impl From<RuntimePublicIPGroup<RuntimePublicIP, RuntimeGatewayIP>> for PublicIP {
-    fn from(rpip: RuntimePublicIPGroup<RuntimePublicIP, RuntimeGatewayIP>) -> Self {
-        let RuntimePublicIPGroup {
-            ip,
-            gateway,
-            contract_id,
-        } = rpip;
-        PublicIP {
-            // SAFETY: Chain ensures all IP's are validly formatted ASCII strings.
-            ip: unsafe { String::from_utf8_unchecked(ip.0 .0) },
-            // SAFETY: Chain ensures all IP's are validly formatted ASCII strings.
-            gateway: unsafe { String::from_utf8_unchecked(gateway.0 .0) },
-            contract_id,
         }
     }
 }
@@ -230,31 +202,25 @@ impl From<RuntimeNodeCertification> for NodeCertification {
 impl
     From<
         RuntimeNode<
-            RuntimePublicConfig<
-                RuntimeIP<RuntimeIP4, RuntimeGW4>,
-                Option<RuntimeIP<RuntimeIP6, RuntimeGW6>>,
-                Option<RuntimeDomain>,
-            >,
+            RuntimeLocation,
             RuntimeInterface<
                 RuntimeInterfaceName,
                 RuntimeInterfaceMac,
                 BoundedVec<RuntimeInterfaceIp>,
             >,
+            SerialNumber,
         >,
     > for Node
 {
     fn from(
         rn: RuntimeNode<
-            RuntimePublicConfig<
-                RuntimeIP<RuntimeIP4, RuntimeGW4>,
-                Option<RuntimeIP<RuntimeIP6, RuntimeGW6>>,
-                Option<RuntimeDomain>,
-            >,
+            RuntimeLocation,
             RuntimeInterface<
                 RuntimeInterfaceName,
                 RuntimeInterfaceMac,
                 BoundedVec<RuntimeInterfaceIp>,
             >,
+            SerialNumber,
         >,
     ) -> Self {
         let RuntimeNode {
@@ -264,8 +230,6 @@ impl
             twin_id,
             resources,
             location,
-            country,
-            city,
             public_config,
             created,
             farming_policy_id,
@@ -276,18 +240,56 @@ impl
             serial_number,
             connection_price,
         } = rn;
+
+        let serial_number = match serial_number {
+            Some(s) => unsafe { String::from_utf8_unchecked(s.0 .0) },
+            None => String::from(""),
+        };
+
+        let public_config = match public_config {
+            Some(config) => {
+                let mut pub_conf = PublicConfig {
+                    ip4: PubIPConfig {
+                        ip: unsafe { String::from_utf8_unchecked(config.ip4.ip.0) },
+                        gw: unsafe { String::from_utf8_unchecked(config.ip4.gw.0) },
+                    },
+                    ip6: None,
+                    domain: None,
+                };
+
+                pub_conf.ip6 = match config.ip6 {
+                    Some(conf6) => Some(PubIPConfig {
+                        ip: unsafe { String::from_utf8_unchecked(conf6.ip.0) },
+                        gw: unsafe { String::from_utf8_unchecked(conf6.gw.0) },
+                    }),
+                    None => None,
+                };
+
+                pub_conf.domain = match config.domain {
+                    Some(domain) => Some(Domain(unsafe { String::from_utf8_unchecked(domain.0) })),
+                    None => None,
+                };
+
+                Some(pub_conf)
+            }
+            None => None,
+        };
+
         Node {
             version,
             id,
             farm_id,
             twin_id,
             resources: resources.into(),
-            location: location.into(),
+            location: Location {
+                longitude: unsafe { String::from_utf8_unchecked(location.longitude.0) },
+                latitude: unsafe { String::from_utf8_unchecked(location.latitude.0) },
+            },
             // SAFETY: Chain ensures this is a valid ASCII string
-            country: unsafe { String::from_utf8_unchecked(country) },
+            country: unsafe { String::from_utf8_unchecked(location.country.0 .0) },
             // SAFETY: Chain ensures this is a valid ASCII string
-            city: unsafe { String::from_utf8_unchecked(city) },
-            public_config: public_config.map(|pc| pc.into()),
+            city: unsafe { String::from_utf8_unchecked(location.city.0 .0) },
+            public_config,
             created,
             farming_policy_id,
             interfaces: interfaces.into_iter().map(|i| i.into()).collect(),
@@ -295,23 +297,8 @@ impl
             secure_boot,
             virtualized,
             // SAFETY: Chain esures this is a valid ASCII string
-            serial_number: unsafe { String::from_utf8_unchecked(serial_number) },
+            serial_number,
             connection_price,
-        }
-    }
-}
-
-impl From<RuntimeLocation> for Location {
-    fn from(rl: RuntimeLocation) -> Self {
-        let RuntimeLocation {
-            longitude,
-            latitude,
-        } = rl;
-        Location {
-            // SAFETY: Chain ensures this is a valid ASCII string.
-            longitude: unsafe { String::from_utf8_unchecked(longitude) },
-            // SAFETY: Chain ensures this is a valid ASCII string.
-            latitude: unsafe { String::from_utf8_unchecked(latitude) },
         }
     }
 }
@@ -320,63 +307,6 @@ impl From<RuntimeResources> for Resources {
     fn from(rl: RuntimeResources) -> Self {
         let RuntimeResources { hru, sru, cru, mru } = rl;
         Resources { hru, sru, cru, mru }
-    }
-}
-
-impl
-    From<
-        RuntimePublicConfig<
-            RuntimeIP<RuntimeIP4, RuntimeGW4>,
-            Option<RuntimeIP<RuntimeIP6, RuntimeGW6>>,
-            Option<RuntimeDomain>,
-        >,
-    > for PublicConfig
-{
-    fn from(
-        rpc: RuntimePublicConfig<
-            RuntimeIP<RuntimeIP4, RuntimeGW4>,
-            Option<RuntimeIP<RuntimeIP6, RuntimeGW6>>,
-            Option<RuntimeDomain>,
-        >,
-    ) -> Self {
-        let RuntimePublicConfig { ip4, ip6, domain } = rpc;
-        PublicConfig {
-            ip4: ip4.into(),
-            ip6: ip6.map(|i| i.into()),
-            domain: domain.map(|d| d.into()),
-        }
-    }
-}
-
-impl From<RuntimeIP<RuntimeIP4, RuntimeGW4>> for PubIPConfig {
-    fn from(rip: RuntimeIP<RuntimeIP4, RuntimeGW4>) -> Self {
-        let RuntimeIP { ip, gw } = rip;
-        PubIPConfig {
-            // SAFETY: Chain ensures this is a valid ASCII string.
-            ip: unsafe { String::from_utf8_unchecked(ip.0 .0) },
-            // SAFETY: Chain ensures this is a valid ASCII string.
-            gw: unsafe { String::from_utf8_unchecked(gw.0 .0) },
-        }
-    }
-}
-
-impl From<RuntimeIP<RuntimeIP6, RuntimeGW6>> for PubIPConfig {
-    fn from(rip: RuntimeIP<RuntimeIP6, RuntimeGW6>) -> Self {
-        let RuntimeIP { ip, gw } = rip;
-        PubIPConfig {
-            // SAFETY: Chain ensures this is a valid ASCII string.
-            ip: unsafe { String::from_utf8_unchecked(ip.0 .0) },
-            // SAFETY: Chain ensures this is a valid ASCII string.
-            gw: unsafe { String::from_utf8_unchecked(gw.0 .0) },
-        }
-    }
-}
-
-impl From<RuntimeDomain> for Domain {
-    fn from(rd: RuntimeDomain) -> Self {
-        let RuntimeDomain(d) = rd;
-        // SAFETY: Chain ensures this is a valid ASCII string.
-        Domain(unsafe { String::from_utf8_unchecked(d.0) })
     }
 }
 
@@ -469,7 +399,7 @@ impl From<RuntimeNodeContract> for NodeContract {
         } = rnc;
         NodeContract {
             node_id,
-            deployment_hash,
+            deployment_hash: deployment_hash.into(),
             deployment_data: deployment_data.0,
             public_ips,
             public_ips_list: public_ips_list
@@ -477,6 +407,23 @@ impl From<RuntimeNodeContract> for NodeContract {
                 .into_iter()
                 .map(|pip| pip.into())
                 .collect(),
+        }
+    }
+}
+
+impl From<RuntimePublicIP> for PublicIP {
+    fn from(rpip: RuntimePublicIP) -> Self {
+        let RuntimePublicIP {
+            ip,
+            gateway,
+            contract_id,
+        } = rpip;
+        PublicIP {
+            // SAFETY: Chain ensures all IP's are validly formatted ASCII strings.
+            ip: unsafe { String::from_utf8_unchecked(ip.0) },
+            // SAFETY: Chain ensures all IP's are validly formatted ASCII strings.
+            gateway: unsafe { String::from_utf8_unchecked(gateway.0) },
+            contract_id,
         }
     }
 }
